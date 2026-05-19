@@ -1,0 +1,107 @@
+component: Select
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: control
+atomic_level: molecule
+
+vendor:
+  primitive: select
+  install_path: /src/vendor/select.tsx
+  import_alias: "@/vendor/select"
+  source_lib: "native (futuro: shadcn/Radix)"
+
+variants: {}
+sizes: [lg]
+states:
+  - default
+  - hover
+  - focus-visible
+  - error
+  - disabled
+
+tokens:
+  shared:
+    height: --semantic-size-control-lg
+    border-radius: --semantic-radius-control
+    typography: --primitive-text-sm
+    label-typography: --primitive-text-xs
+    label-letter-spacing: "0.04em"
+    padding-inline: --semantic-space-inset-lg
+    gap-label-input: --semantic-space-stack-xs
+    motion: --semantic-motion-interaction
+
+  default:
+    background: --semantic-bg-surface
+    text: --semantic-text-primary
+    label: --semantic-text-secondary
+    border: --semantic-border-default
+  focus-within:
+    border: --semantic-border-focus
+    ring: --semantic-border-focus (opacity 30%)
+  error:
+    border: --hub-danger
+  disabled:
+    background: --semantic-bg-subtle
+    opacity: 0.5
+
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: n/a
+  container_padding: inset-lg
+  heading_association_respected: true
+  first_last_reset_required: false
+  exceptions: []
+
+a11y:
+  role: combobox
+  semantic_element: select
+  keyboard: [Arrow keys, Enter, Space]
+  focus_visible: required
+  required_aria:
+    - "aria-invalid quando isError"
+    - "aria-disabled quando isDisabled"
+  wcag_criteria: ["1.4.3", "1.4.11", "2.1.1", "2.4.7", "2.5.5"]
+
+content:
+  select.placeholder: "Selecionar"
+  select.label.periodo: "Período de Análise"
+  select.label.clientes: "Clientes"
+  select.label.estado: "Estado"
+
+api:
+  props:
+    label: { type: string, required: false }
+    value: { type: string, required: false }
+    isError: { type: boolean, default: false }
+    isDisabled: { type: boolean, default: false }
+    onChange: { type: function }
+    children: { type: ReactNode, required: true, note: "<option> elements" }
+  events: [onChange, onFocus, onBlur]
+
+outputs: [tsx, types, contract, stories]
+
+composes: []
+
+gaps_for_foundations: []
+
+references:
+  squad_spec: squads/magic-ds/component/Select.spec.yaml
+  vendor_primitive: src/vendor/select.tsx
+
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - label (__label)
+  - body (__field)
+
+# Next required step: mds-audit *design-check --target Select.spec.yaml.
+# Cannot proceed to mds-ops until score ≥ B.

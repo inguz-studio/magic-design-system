@@ -1,0 +1,92 @@
+component: TooltipEnriched
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: feedback
+atomic_level: molecule
+
+description: |
+  Tooltip com conteúdo rico (não só texto simples). Mostra em hover (300ms
+  delay) e focus (sem delay). Escape fecha. Não interfere com tab order
+  do conteúdo. Pattern tooltip.
+
+# Vendor (Round 3.3 — policy-aware, migrado de native V1)
+vendor:
+  primitive: tooltip
+  install_path: src/vendor/tooltip.tsx
+  import_alias: "@/vendor/tooltip"
+  fallback_native_v1: src/components/molecules/TooltipEnriched/_archive/TooltipEnriched.native.v1.tsx
+
+
+variants:
+  placement: [top, right, bottom, left]
+
+sizes: []
+states: [hidden, visible]
+
+bem:
+  block: tooltip
+  elements: [trigger, panel, arrow]
+  modifiers:
+    placement: [top, right, bottom, left]
+    visible: [visible]
+
+html_structure: |
+  <span class="tooltip__trigger" aria-describedby="tt-{id}">{trigger}</span>
+  <div class="tooltip tooltip--top tooltip--visible" id="tt-{id}" role="tooltip">
+    <div class="tooltip__panel">
+      <div class="tooltip__arrow" aria-hidden="true"></div>
+      {content}
+    </div>
+  </div>
+
+a11y_native:
+  pattern: tooltip
+  required:
+    - "role='tooltip' + id único no panel"
+    - "Trigger com aria-describedby apontando pro tooltip"
+    - "Mostra em hover (300ms delay) E em focus (sem delay)"
+    - "Escape fecha tooltip ativo"
+    - "Não interfere com tab order (tooltip nunca recebe foco)"
+    - "Sumir ao perder hover/focus"
+
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: stack-sm
+  container_padding: inset-sm
+  heading_association_respected: false
+  first_last_reset_required: true
+  composition_gap: null
+  exceptions: ["Tooltip não participa do rhythm de conteúdo"]
+
+tokens:
+  shared:
+    bg: --semantic-bg-inverse
+    text: --semantic-text-inverse
+    radius: --semantic-radius-control
+    shadow: --semantic-shadow-overlay
+    z: --semantic-z-tooltip
+
+a11y:
+  role: tooltip
+  keyboard: [Escape]
+  required_aria: ["panel.role=tooltip", "trigger.aria-describedby"]
+  wcag_criteria: ["1.4.13", "2.1.1"]
+
+api:
+  props:
+    trigger: { type: ReactNode, required: true }
+    content: { type: ReactNode, required: true }
+    placement: { type: enum, values: [top, right, bottom, left], default: top }
+    delay: { type: number, default: 300, note: "ms antes de mostrar em hover" }
+  events: []
+
+outputs: [tsx, types, contract, stories]
+
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-15
+  round: 3
+  wave: overlay-lot-4

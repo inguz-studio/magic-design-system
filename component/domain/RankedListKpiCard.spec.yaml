@@ -1,0 +1,183 @@
+# =============================================================================
+# RankedListKpiCard.spec.yaml — KPI lista rankada top N com toolbar
+# =============================================================================
+# Especialização do KpiCardShell pra análise top-N com:
+#   - toolbar opcional no topo (slot para select ou combobox futuro)
+#   - lista numerada: rank + item (title + sub) + value + valueLabel
+# =============================================================================
+
+component: RankedListKpiCard
+version: 0.1.0
+kind: domain
+domain:
+  tenant_origin: shelflix
+  business_concept: "KPI ranking top-N com posicao numerica + valor"
+  use_cases:
+    - "Top clientes, top alertas, top dispositivos"
+status: draft
+category: display
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: null
+# ── CONTRATO DE VARIANTES ────────────────────────────────────────────────────
+variants: {}
+sizes: []
+states: [default]
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: ranked-list-kpi
+  elements:
+    - toolbar        # area de controle no topo (slot)
+    - list           # <ol> lista ordenada
+    - row            # <li> item da lista
+    - rank           # número do rank (ex: "1")
+    - item           # bloco de info (title + sub)
+    - item-title     # nome principal (ex: "HNK_291_24 / Shopping Iguatemi SP")
+    - item-sub       # sub info (ex: "Rede Assai")
+    - value          # valor numérico (ex: "12")
+    - value-label    # label abaixo do valor (ex: "variações")
+  modifiers: {}
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <article class="kpi-card">
+    <header class="kpi-card__header">
+      <span class="kpi-card__icon" aria-hidden="true"><!-- {icon} --></span>
+      <h4 class="kpi-card__title">{title}</h4>
+    </header>
+    <div class="kpi-card__body">
+      <!-- toolbar opcional (ex: select Onda A, Combobox Onda C) -->
+      <div class="ranked-list-kpi__toolbar">
+        <!-- {toolbar} slot -->
+      </div>
+      <ol class="ranked-list-kpi__list">
+        <!-- por item: -->
+        <li class="ranked-list-kpi__row">
+          <span class="ranked-list-kpi__rank">{rank}</span>
+          <div class="ranked-list-kpi__item">
+            <span class="ranked-list-kpi__item-title">{title}</span>
+            <span class="ranked-list-kpi__item-sub">{sub}</span>
+          </div>
+          <div class="ranked-list-kpi__value">
+            <span>{value}</span>
+            <span class="ranked-list-kpi__value-label">{valueLabel}</span>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </article>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    row-padding: --semantic-space-inset-sm
+    row-gap: --semantic-space-stack-sm
+    rank-size: --primitive-text-md            # 18px semibold
+    rank-weight: --primitive-weight-semibold
+    rank-color: --semantic-text-tertiary
+    item-title-size: --primitive-text-sm      # 14px semibold
+    item-title-weight: --primitive-weight-semibold
+    item-title-color: --semantic-text-primary
+    item-sub-size: --primitive-text-xs        # 12px
+    item-sub-color: --semantic-text-tertiary
+    value-size: --primitive-text-md           # 18px semibold
+    value-weight: --primitive-weight-semibold
+    value-color: --semantic-text-primary
+    value-label-size: --primitive-text-2xs    # 10px
+    value-label-color: --semantic-text-tertiary
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-sm
+  container_padding: inset-lg
+  heading_association_respected: true
+  first_last_reset_required: true   # reset ol padding/margin
+  composition_gap: null
+  exceptions: []
+
+# ── ACESSIBILIDADE (WCAG 2.1 AA) ─────────────────────────────────────────────
+a11y:
+  role: implicit
+  semantic_element: article
+  keyboard:
+    - "toolbar slot pode conter elementos focáveis (select, combobox)"
+  focus_visible: inherited_from_slot
+  required_aria:
+    - "ranked-list-kpi__list usa <ol> — lista ordenada semântica"
+    - "ranked-list-kpi__rank — visual, não duplicar via aria"
+  wcag_criteria:
+    - "1.4.3"
+    - "2.4.6"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    title:
+      type: string
+      required: true
+    icon:
+      type: ReactNode
+      required: false
+    helpText:
+      type: string
+      required: false
+    toolbar:
+      type: ReactNode
+      required: false
+      description: "Slot de controle no topo (select Onda A, Combobox Onda C futura)."
+    items:
+      type: "{ rank: number; title: string; sub?: string; value: string | number; valueLabel?: string }[]"
+      required: true
+    className:
+      type: string
+      required: false
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+
+# ── COMPOSITION ──────────────────────────────────────────────────────────────
+composes: [KpiCardShell]
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations:
+  - "--semantic-space-inset-sm: confirmar existência em tokens.css"
+  - "--primitive-text-2xs: confirmar existência em tokens.css (10px)"
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  output:
+    canonical_css: squads/magic-ds/output/css/ranked-list-kpi.css
+    canonical_html: squads/magic-ds/output/html/ranked-list-kpi.html
+    adapter_react: src/components/organisms/RankedListKpiCard/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 3
+  template_version: 2.0.0
+  migration_notes:
+    - "2026-05-14: criado pra Dashboard (Análise Top 10). Especialização canônica do KpiCardShell com lista rankada e toolbar slot."
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - action (__item-title)
+  - micro (__item-sub)

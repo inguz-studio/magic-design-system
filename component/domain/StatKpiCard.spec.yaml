@@ -1,0 +1,239 @@
+# =============================================================================
+# StatKpiCard.spec.yaml — KPI numérico com progress bar colorida por status
+# =============================================================================
+# Especialização do KpiCardShell pra valores numéricos absolutos com:
+#   - valor grande (ex: 2000) + sufixo "de N" (ex: "de 2700")
+#   - percentual colorido por status (ex: "72%" em verde, "14,8%" em vermelho)
+#   - progress bar horizontal colorida por status
+# =============================================================================
+
+component: StatKpiCard
+version: 0.1.0
+kind: domain
+domain:
+  tenant_origin: shelflix
+  business_concept: "KPI estatistico single-value com numero grande + delta opcional"
+  use_cases:
+    - "Metricas top-level do dashboard (clientes ativos, dispositivos online)"
+status: draft
+category: display
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+# Composição em cima do KpiCardShell (que já usa shadcn/card).
+# Não precisa de vendor próprio.
+vendor:
+  primitive: null
+# ── CONTRATO DE VARIANTES ────────────────────────────────────────────────────
+variants:
+  status: [online, alert, offline, fair, unavailable, pre-offline, maintenance]
+  # status define a cor do percentual + progress bar fill
+
+sizes: []
+states: [default]
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+# Compõe em cima de .kpi-card (do KpiCardShell). StatKpiCard adiciona
+# elements dentro do .kpi-card__body via classes próprias .stat-kpi__*.
+bem:
+  block: stat-kpi
+  elements:
+    - value-row     # linha com valor + denominador
+    - value         # número grande (ex: 2000)
+    - denominator   # "de N" (ex: "de 2700")
+    - percent       # percentual (ex: "72%")
+    - progress      # container da barra
+    - progress-fill # preenchimento colorido
+  modifiers:
+    status: [online, alert, offline, fair, unavailable, pre-offline, maintenance]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+# StatKpiCard envelopa o KpiCardShell — o spec mostra a composição completa.
+html_structure: |
+  <article class="kpi-card">
+    <header class="kpi-card__header">
+      <span class="kpi-card__icon" aria-hidden="true">
+        <!-- {icon} — Lucide (Signal/AlertTriangle/WifiOff/Clock/etc.) -->
+      </span>
+      <h4 class="kpi-card__title">{title}</h4>
+      <button class="kpi-card__help" type="button" aria-label="{helpText}">
+        <!-- help icon (se helpText) -->
+      </button>
+    </header>
+    <div class="kpi-card__body">
+      <div class="stat-kpi__value-row">
+        <span class="stat-kpi__value">{value}</span>
+        <span class="stat-kpi__denominator">de {total}</span>
+      </div>
+      <div class="stat-kpi__percent stat-kpi__percent--{status}">{percent}%</div>
+      <div
+        class="stat-kpi__progress"
+        role="progressbar"
+        aria-valuenow="{value}"
+        aria-valuemin="0"
+        aria-valuemax="{total}"
+        aria-label="{title}: {value} de {total} ({percent}%)"
+      >
+        <div
+          class="stat-kpi__progress-fill stat-kpi__progress-fill--{status}"
+          style="width: {percent}%"
+        ></div>
+      </div>
+    </div>
+  </article>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    value-typography: "600 var(--primitive-text-2xl)/1 var(--primitive-font-sans)"  # 28px bold
+    denominator-color: --semantic-text-tertiary
+    denominator-size: --primitive-text-xs
+    percent-typography: "600 var(--primitive-text-xs)/1 var(--primitive-font-sans)" # 12px bold
+    progress-height: "0.375rem"     # 6px
+    progress-bg: --semantic-bg-subtle
+    progress-radius: --semantic-radius-pill
+    gap-value-denominator: --semantic-space-inline-sm  # 8px
+    gap-stack-internal: --semantic-space-stack-sm      # 8px
+
+  # Por status: percent + progress-fill consomem o mesmo token semantic
+  online:    { color: --semantic-status-online }
+  alert:     { color: --semantic-status-alert }
+  offline:   { color: --semantic-status-offline }
+  fair:      { color: --semantic-status-fair }
+  unavailable: { color: --semantic-status-unavailable }
+  "pre-offline": { color: --semantic-status-pre-offline }
+  maintenance: { color: --semantic-status-maintenance }
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-sm        # 8px entre value-row, percent, progress
+  internal_group_gap: stack-md       # 16px herdado do kpi-card__body (já tem gap)
+  container_padding: inset-lg        # herdado de .kpi-card
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions: []
+
+# ── ACESSIBILIDADE (WCAG 2.1 AA) ─────────────────────────────────────────────
+a11y:
+  role: implicit
+  semantic_element: article
+  keyboard: []
+  focus_visible: not_applicable
+  required_aria:
+    - "stat-kpi__progress[role='progressbar']"
+    - "stat-kpi__progress[aria-valuenow]"
+    - "stat-kpi__progress[aria-valuemin='0']"
+    - "stat-kpi__progress[aria-valuemax='{total}']"
+    - "stat-kpi__progress[aria-label] — descreve valor em texto"
+    - "stat-kpi__value (visual) tem equivalente textual via aria-label do progressbar"
+  wcag_criteria:
+    - "1.4.3"   # Contraste cor
+    - "1.4.11"  # UI contrast
+    - "2.4.6"   # Heading + labels
+
+# ── CONTEÚDO ─────────────────────────────────────────────────────────────────
+content:
+  statkpi.denominator.prefix: "de"   # "de 2700"
+
+# ── API PÚBLICA (interface do adapter React) ─────────────────────────────────
+api:
+  props:
+    title:
+      type: string
+      required: true
+      description: "Título do card (h4 dentro do header). Ex: 'Conformes'."
+    icon:
+      type: ReactNode
+      required: false
+      description: "Lucide-react ou SVG no header (Signal/AlertTriangle/WifiOff/Clock)."
+    helpText:
+      type: string
+      required: false
+      description: "Texto do help button — vira tooltip + aria-label."
+    value:
+      type: number
+      required: true
+      description: "Valor numérico atual (ex: 2000)."
+    total:
+      type: number
+      required: true
+      description: "Valor total / máximo (ex: 2700)."
+    status:
+      type: "online | alert | offline | fair | unavailable | pre-offline | maintenance"
+      required: true
+      description: "Status semântico — define cor do percentual e progress fill."
+    percentPrecision:
+      type: number
+      required: false
+      default: 1
+      description: "Casas decimais do percentual exibido. Default 1 (ex: '7,4%')."
+    locale:
+      type: string
+      required: false
+      default: "pt-BR"
+      description: "Locale pra formatar value/total/percent (separador decimal/milhar)."
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []   # neutro — consome semantic puro
+
+# ── COMPOSITION ──────────────────────────────────────────────────────────────
+composes: [KpiCardShell]
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    node: "924:20706"
+    url: "https://www.figma.com/design/zYrfb4icuUdsXJHKBmZiAY/Shelflix--Adm?node-id=924-20706"
+  audit: squads/magic-ds/audit/04-figma-complete-audit.md
+  foundations: squads/magic-ds/foundations/02-token-architecture.md
+  governance: squads/magic-ds/governance/03-governance-validation.md
+  output:
+    canonical_css: squads/magic-ds/output/css/stat-kpi.css
+    canonical_html: squads/magic-ds/output/html/stat-kpi.html
+    adapter_react: src/components/organisms/StatKpiCard/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 3
+  template_version: 2.0.0
+  migration_notes:
+    - "2026-05-14: criado pra Dashboard (Conformes/Alerta/Offline/Indisponíveis). Especialização canônica do KpiCardShell pra valores numéricos com progress bar."
+
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - h2 (value)
+  - label (__sub)
+
+# Next required step: mds-audit *design-check --target StatKpiCard.spec.yaml.
+# Cannot proceed to mds-ops until score ≥ B.

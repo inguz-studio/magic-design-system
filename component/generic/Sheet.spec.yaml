@@ -1,0 +1,243 @@
+# =============================================================================
+# Sheet.spec.yaml — Contrato canônico Round 4
+# Spec criado retroativamente — CSS+adapter existiam desde Round 3.3 sem spec
+# formal no template v2. Upgradeado em 2026-05-19.
+# =============================================================================
+
+component: Sheet
+version: 0.1.0
+kind: generic
+status: draft
+category: navigation
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+# Sheet na vendor_whitelist (squad-policy.yaml). Reusa primitivo Dialog.
+vendor:
+  primitive: dialog
+  install_path: src/vendor/dialog.tsx
+  import_alias: "@/vendor/dialog"
+
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+variants:
+  side: [top, right, bottom, left]
+
+sizes: []
+
+states:
+  - closed
+  - open
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: sheet
+  elements:
+    - overlay
+    - header
+    - title
+    - description
+    - close
+    - body
+    - footer
+  modifiers:
+    side: [top, right, bottom, left]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <div class="sheet-overlay"></div>
+  <aside class="sheet sheet--right"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="sheet-title"
+         aria-describedby="sheet-desc">
+    <header class="sheet__header">
+      <div>
+        <h2 class="sheet__title" id="sheet-title">Detalhes</h2>
+        <p class="sheet__description" id="sheet-desc">Subtítulo opcional</p>
+      </div>
+      <button class="sheet__close" aria-label="Fechar">×</button>
+    </header>
+    <div class="sheet__body"><!-- children --></div>
+    <footer class="sheet__footer"><!-- footer --></footer>
+  </aside>
+
+# ── A11Y NATIVA ──────────────────────────────────────────────────────────────
+a11y_native:
+  pattern: dialog-aria-1.2
+  required:
+    - "role='dialog' + aria-modal='true' (sempre modal)"
+    - "aria-labelledby apontando pro title quando title presente"
+    - "aria-describedby apontando pra description quando description presente"
+    - "Focus trap dentro do panel"
+    - "Escape fecha"
+    - "Click no overlay fecha"
+    - "Return focus ao trigger após fechar"
+    - "Body scroll lock enquanto aberto"
+
+# ── TOKENS ───────────────────────────────────────────────────────────────────
+tokens:
+  shared:
+    bg: --sf-bg-surface
+    text: --sf-text-primary
+    border: --sf-border
+    shadow: --sf-shadow-modal
+    z-index: --sf-z-modal
+    overlay-bg: --sf-bg-overlay
+    space-inline: --sf-space-inline-md
+    space-inset: --sf-space-inset-md
+    type-heading: --sf-type-heading-sm
+    type-body: --sf-type-body-sm
+    radius-control: --sf-radius-control-sm
+    size-control: --sf-size-control-sm
+    text-secondary: --sf-text-secondary
+    text-tertiary: --sf-text-tertiary
+    focus-ring: --sf-shadow-focus-ring
+    space-inline-sm: --sf-space-inline-sm
+
+# ── DRIFT DETECTION ──────────────────────────────────────────────────────────
+tokens_type:
+  - heading-sm
+  - body-sm
+
+tokens_shadow:
+  - focus-ring
+  - modal
+
+tokens_motion: []
+
+tokens_z:
+  - modal
+
+tokens_container: []
+
+tokens_icon:
+  - control
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-md
+  internal_group_gap: stack-md
+  container_padding: inset-md
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions:
+    - "Footer usa justify-content: flex-end com gap inline-sm entre botões"
+    - "Side top/bottom: block-size limitada (min(20rem, 80vh)); inline-size=100vw"
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: dialog
+  semantic_element: aside
+  keyboard:
+    - Tab
+    - Escape
+  focus_visible: required
+  required_aria:
+    - role=dialog
+    - aria-modal=true
+    - aria-labelledby (quando title presente)
+    - aria-describedby (quando description presente)
+    - aria-label=Fechar no botão close
+  wcag_criteria:
+    - "1.4.3"
+    - "2.1.1"
+    - "2.1.2"
+    - "2.4.3"
+    - "2.4.7"
+    - "2.5.5"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    trigger:
+      type: ReactNode
+      required: false
+      description: "Elemento que abre a Sheet (passado como asChild ao VendorDialogTrigger)."
+    side:
+      type: enum
+      values: [top, right, bottom, left]
+      default: right
+      required: false
+      description: "Lado de onde a sheet desliza."
+    title:
+      type: ReactNode
+      required: false
+      description: "Título renderizado no header."
+    description:
+      type: ReactNode
+      required: false
+      description: "Subtítulo/descrição no header abaixo do título."
+    isOpen:
+      type: boolean
+      required: false
+      description: "Controlled open state."
+    onOpenChange:
+      type: function
+      required: false
+      description: "(open: boolean) => void"
+    footer:
+      type: ReactNode
+      required: false
+      description: "Conteúdo do footer (botões de ação)."
+    children:
+      type: ReactNode
+      required: true
+      description: "Conteúdo principal do body."
+    className:
+      type: string
+      required: false
+      description: "Classe adicional injetada no elemento raiz (após sheet--{side})."
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    node: TBD
+  foundations: squads/magic-ds/foundations/07-token-architecture-v3.md
+  governance: squads/magic-ds/governance/matrix.md
+  component_kinds: squads/magic-ds/governance/component-kinds.md
+  canonical_css: squads/magic-ds/output/css/sheet.css
+  adapter: src/components/organisms/Sheet/Sheet.tsx
+  squad_spec: squads/magic-ds/component/generic/Sheet.spec.yaml
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-19
+  round: 4
+  wave: post-cleanup
+  notes: |
+    Spec criado retroativamente em 2026-05-19 — componente existia em CSS+adapter
+    desde Round 3.3 (wave overlay-lot-4) mas sem spec no template v2 completo.
+    Upgradeado de stub Round 3 para spec Round 4 em 2026-05-19.
+    Diferença vs Drawer: suporta 4 lados (top/bottom incluídos), sempre modal,
+    tem campo description no header.

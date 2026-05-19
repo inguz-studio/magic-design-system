@@ -1,0 +1,110 @@
+component: CommandMenu
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: navigation
+atomic_level: organism
+
+description: |
+  Command palette (Cmd+K / Ctrl+K). Overlay centralizado modal-like com
+  search input + listagem filtrável de commands agrupados. Pattern
+  combobox + listbox + dialog modal. Enter executa command, Escape fecha.
+
+# Vendor (Round 3.3 — policy-aware, migrado de native V1)
+vendor:
+  primitive: command
+  install_path: src/vendor/command.tsx
+  import_alias: "@/vendor/command"
+  fallback_native_v1: src/components/molecules/CommandMenu/_archive/CommandMenu.native.v1.tsx
+  note: "cmdk (não-Radix); Dialog wrapper via @/vendor/dialog"
+
+variants: {}
+sizes: []
+states: [closed, open, loading, empty]
+
+bem:
+  block: command-menu
+  elements: [overlay, panel, input, list, item, group, group-label, empty, kbd, footer]
+  modifiers:
+    open: [open]
+    active: [active]
+
+html_structure: |
+  <div class="command-menu command-menu--open" role="dialog" aria-modal="true"
+       aria-label="Comandos">
+    <div class="command-menu__overlay" aria-hidden="true"></div>
+    <div class="command-menu__panel">
+      <input class="command-menu__input"
+             role="combobox" aria-autocomplete="list" aria-expanded="true"
+             aria-controls="cmd-list" placeholder="Digite um comando…"/>
+      <ul class="command-menu__list" id="cmd-list" role="listbox">
+        <li class="command-menu__group-label" role="presentation">Navegação</li>
+        <li class="command-menu__item command-menu__item--active" role="option">
+          <span>Ir para Dashboard</span>
+          <kbd class="command-menu__kbd">G D</kbd>
+        </li>
+      </ul>
+      <div class="command-menu__footer">
+        <kbd class="command-menu__kbd">↑↓</kbd> navegar
+        <kbd class="command-menu__kbd">↵</kbd> executar
+        <kbd class="command-menu__kbd">esc</kbd> fechar
+      </div>
+    </div>
+  </div>
+
+a11y_native:
+  pattern: combobox+listbox+dialog
+  required:
+    - "Container com role='dialog' + aria-modal='true' + aria-label"
+    - "Backdrop click + Escape fecham"
+    - "Focus trap dentro do panel (Tab circula entre input e botões do footer; setas navegam listbox)"
+    - "Input role='combobox' + aria-controls list"
+    - "List role='listbox', items role='option' + aria-selected"
+    - "aria-activedescendant aponta item ativo sem mover DOM focus"
+    - "Atalho global Cmd+K / Ctrl+K abre menu (registrado fora do componente, por convenção)"
+    - "Return focus ao trigger (último element ativo) ao fechar"
+
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: stack-md
+  container_padding: inset-md
+  heading_association_respected: false
+  first_last_reset_required: true
+  composition_gap: null
+  exceptions: []
+
+tokens:
+  shared:
+    bg: --semantic-bg-surface
+    overlay: rgba(0,0,0,0.5)
+    border: --semantic-border-default
+    radius: --semantic-radius-surface-lg
+    shadow: --semantic-shadow-modal
+    z: --semantic-z-modal
+
+a11y:
+  role: dialog
+  keyboard: [Tab, ArrowUp, ArrowDown, Enter, Escape, "Ctrl+K (abertura global)"]
+  required_aria:
+    - "dialog.aria-modal=true"
+    - "input.role=combobox"
+    - "list.role=listbox"
+  wcag_criteria: ["1.4.3", "2.1.1", "2.1.2", "2.4.7"]
+
+api:
+  props:
+    isOpen: { type: boolean, required: true }
+    onOpenChange: { type: function, required: true }
+    commands: { type: "CommandGroup[]", required: true }
+    placeholder: { type: string, default: "Digite um comando…" }
+  events: [onOpenChange, onSelect]
+
+outputs: [tsx, types, contract, stories]
+
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-15
+  round: 3
+  wave: overlay-lot-3

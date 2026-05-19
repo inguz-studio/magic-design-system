@@ -1,0 +1,121 @@
+component: Popover
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: feedback
+atomic_level: molecule
+
+description: |
+  Overlay flutuante não-modal. Trigger abre conteúdo em portal posicionado
+  ao redor do trigger. Sem focus trap (fluxo continua natural). Click fora
+  e Escape fecham. Return focus ao trigger no fechamento.
+  Base reutilizável pra DropdownMenu, ContextMenu, TooltipEnriched.
+
+# Vendor (Round 3.3 — policy-aware, migrado de native V1)
+vendor:
+  primitive: popover
+  install_path: src/vendor/popover.tsx
+  import_alias: "@/vendor/popover"
+  fallback_native_v1: src/components/molecules/Popover/_archive/Popover.native.v1.tsx
+
+
+variants:
+  placement: [top, right, bottom, left]
+
+sizes: []
+states: [closed, open]
+
+bem:
+  block: popover
+  elements: [trigger, panel, arrow]
+  modifiers:
+    placement: [top, right, bottom, left]
+    open: [open]
+
+html_structure: |
+  <button class="popover__trigger" type="button"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          aria-controls="popover-{id}">{trigger}</button>
+  <!-- Portal target — renderiza em body quando open -->
+  <div class="popover popover--{placement} popover--open"
+       id="popover-{id}"
+       role="dialog"
+       aria-labelledby="popover-title-{id}">
+    <div class="popover__panel">
+      <div class="popover__arrow" aria-hidden="true"></div>
+      {content}
+    </div>
+  </div>
+
+a11y_native:
+  pattern: popover-nonmodal
+  required:
+    - "role='dialog' no panel (não é alert, não é modal)"
+    - "Trigger com aria-expanded refletindo estado e aria-controls apontando pro panel"
+    - "Sem focus trap (popover não-modal — Tab sai do panel normalmente)"
+    - "Escape fecha o popover"
+    - "Click fora (em document) fecha o popover"
+    - "Return focus ao trigger quando fecha"
+    - "Posicionamento: top/right/bottom/left calculado em relação ao trigger; flip automático se vai sair do viewport"
+    - "z-index: var(--semantic-z-popover)"
+
+rhythm:
+  internal_item_gap: stack-sm
+  internal_group_gap: stack-md
+  container_padding: inset-md
+  heading_association_respected: true
+  first_last_reset_required: true
+  composition_gap: null
+  exceptions: []
+
+tokens:
+  shared:
+    background: --semantic-bg-surface
+    border: --semantic-border-default
+    shadow: --semantic-shadow-overlay
+    radius: --semantic-radius-surface
+    padding: --semantic-space-inset-md
+    motion-in: --semantic-motion-overlay-in
+    motion-out: --semantic-motion-overlay-out
+    z-index: --semantic-z-popover
+
+a11y:
+  role: dialog
+  keyboard: [Tab, Escape]
+  focus_visible: required
+  required_aria:
+    - "trigger.aria-expanded"
+    - "trigger.aria-controls"
+    - "panel.role=dialog"
+    - "panel.aria-labelledby (se houver título)"
+  wcag_criteria: ["1.4.3", "2.1.1", "2.1.2", "2.4.7"]
+
+api:
+  props:
+    trigger:    { type: ReactNode, required: true }
+    children:   { type: ReactNode, required: true, note: "conteúdo do panel" }
+    placement:  { type: enum, values: [top, right, bottom, left], default: bottom }
+    isOpen:     { type: boolean, required: false, note: "controlled mode" }
+    onOpenChange: { type: function, required: false }
+    title:      { type: string, required: false }
+  events: [onOpenChange]
+
+outputs: [tsx, types, contract, stories]
+
+composes: []
+
+gaps_for_foundations: []
+
+references:
+  squad_spec: squads/magic-ds/component/generic/Popover.spec.yaml
+
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-15
+  round: 3
+  wave: overlay-lot-1
+
+# Next required step: mds-audit *design-check --target Popover.spec.yaml.

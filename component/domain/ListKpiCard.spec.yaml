@@ -1,0 +1,177 @@
+# =============================================================================
+# ListKpiCard.spec.yaml — KPI lista de alertas com status coloridos
+# =============================================================================
+# Especialização do KpiCardShell pra listas verticais com status semântico.
+#   - lista de items com ícone colorido por status + label + valor
+#   - status define cor do ícone via modifier
+# =============================================================================
+
+component: ListKpiCard
+version: 0.1.0
+kind: domain
+domain:
+  tenant_origin: shelflix
+  business_concept: "KPI lista com status colorido por linha"
+  use_cases:
+    - "Inventario de status (online/offline/alerta por categoria)"
+status: draft
+category: display
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: null
+# ── CONTRATO DE VARIANTES ────────────────────────────────────────────────────
+variants:
+  status: [online, alert, offline, fair, unavailable, pre-offline, maintenance]
+
+sizes: []
+states: [default]
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: list-kpi
+  elements:
+    - list       # <ul> container da lista
+    - row        # <li> por item da lista
+    - icon       # ícone do item (colorido por status)
+    - label      # texto descritivo (flex-1)
+    - value      # valor numérico (right, semibold)
+  modifiers:
+    status: [online, alert, offline, fair, unavailable, pre-offline, maintenance]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <article class="kpi-card">
+    <header class="kpi-card__header">
+      <span class="kpi-card__icon" aria-hidden="true">
+        <!-- {icon} — Lucide -->
+      </span>
+      <h4 class="kpi-card__title">{title}</h4>
+      <button class="kpi-card__help" type="button" aria-label="{helpText}">
+        <!-- help icon (se helpText) -->
+      </button>
+    </header>
+    <div class="kpi-card__body">
+      <ul class="list-kpi__list" role="list">
+        <!-- por cada item: -->
+        <li class="list-kpi__row list-kpi__row--{status}">
+          <span class="list-kpi__icon" aria-hidden="true">
+            <!-- {icon} — ícone do status -->
+          </span>
+          <span class="list-kpi__label">{label}</span>
+          <span class="list-kpi__value">{value}</span>
+        </li>
+      </ul>
+    </div>
+  </article>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    list-gap: --semantic-space-stack-sm    # 8px entre rows
+    icon-size: --semantic-size-icon-sm     # 16px
+    label-size: --primitive-text-sm        # 14px
+    value-size: --primitive-text-sm        # 14px semibold
+    value-color: --semantic-text-primary
+    label-color: --semantic-text-primary
+
+  # Por status: icon color
+  online:      { color: --semantic-status-online }
+  alert:       { color: --semantic-status-alert }
+  offline:     { color: --semantic-status-offline }
+  fair:        { color: --semantic-status-fair }
+  unavailable: { color: --semantic-status-unavailable }
+  "pre-offline": { color: --semantic-status-pre-offline }
+  maintenance: { color: --semantic-status-maintenance }
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-sm       # 8px entre rows
+  container_padding: inset-lg       # herdado de .kpi-card
+  heading_association_respected: true
+  first_last_reset_required: true   # reset de list-style, padding, margin
+  composition_gap: null
+  exceptions: []
+
+# ── ACESSIBILIDADE (WCAG 2.1 AA) ─────────────────────────────────────────────
+a11y:
+  role: implicit
+  semantic_element: article
+  keyboard: []
+  focus_visible: not_applicable
+  required_aria:
+    - "list-kpi__list[role='list'] — lista semântica"
+    - "list-kpi__icon[aria-hidden='true'] — decorativo"
+  wcag_criteria:
+    - "1.4.3"   # Contraste cor
+    - "1.4.11"  # UI contrast
+
+# ── API PÚBLICA (interface do adapter React) ─────────────────────────────────
+api:
+  props:
+    title:
+      type: string
+      required: true
+      description: "Título do card (h4 no header)."
+    icon:
+      type: ReactNode
+      required: false
+      description: "Ícone do header."
+    helpText:
+      type: string
+      required: false
+      description: "Texto do help button."
+    items:
+      type: "{ icon: ReactNode; label: string; value: string | number; status: ListKpiStatus }[]"
+      required: true
+      description: "Lista de items com ícone, label, valor e status."
+    className:
+      type: string
+      required: false
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+
+# ── COMPOSITION ──────────────────────────────────────────────────────────────
+composes: [KpiCardShell]
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations:
+  - "--semantic-size-icon-sm: token requerido mas pode não existir — verify in tokens.css"
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  output:
+    canonical_css: squads/magic-ds/output/css/list-kpi.css
+    canonical_html: squads/magic-ds/output/html/list-kpi.html
+    adapter_react: src/components/organisms/ListKpiCard/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 3
+  template_version: 2.0.0
+  migration_notes:
+    - "2026-05-14: criado pra Dashboard (Distribuição de alertas). Especialização canônica do KpiCardShell pra listas de status."
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - body (__label)
+  - action (__value)

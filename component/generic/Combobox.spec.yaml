@@ -1,0 +1,118 @@
+component: Combobox
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: control
+atomic_level: molecule
+
+description: |
+  Input + listbox filtrável (autocomplete). Pattern combobox-aria-1.2.
+  Setas Up/Down navegam, Enter seleciona, Escape fecha, typing filtra
+  (debounce 150ms). aria-activedescendant aponta pra option sem mover
+  DOM focus. Visual estilizado (lista é div custom, não <select> nativo).
+
+# Vendor (Round 3.3 — policy-aware, migrado de native V1)
+vendor:
+  primitive: select-radix
+  install_path: src/vendor/select-radix.tsx
+  import_alias: "@/vendor/select-radix"
+  fallback_native_v1: src/components/molecules/Combobox/_archive/Combobox.native.v1.tsx
+
+
+variants: {}
+sizes: [lg]
+states: [closed, open, loading, disabled, error]
+
+bem:
+  block: combobox
+  elements: [trigger, label, input, listbox, option, empty]
+  modifiers:
+    open: [open]
+    loading: [loading]
+    disabled: [disabled]
+    error: [error]
+    selected: [selected]
+    active: [active]
+
+html_structure: |
+  <div class="combobox">
+    <label class="combobox__label" for="cb-{id}">Cliente</label>
+    <input class="combobox__input" id="cb-{id}"
+           role="combobox" aria-autocomplete="list"
+           aria-expanded="true" aria-controls="cb-list-{id}"
+           aria-activedescendant="cb-opt-{id}-1"/>
+    <ul class="combobox__listbox" id="cb-list-{id}" role="listbox">
+      <li class="combobox__option combobox__option--active"
+          id="cb-opt-{id}-0" role="option" aria-selected="false">Opção A</li>
+      <li class="combobox__option combobox__option--selected"
+          id="cb-opt-{id}-1" role="option" aria-selected="true">Opção B</li>
+    </ul>
+  </div>
+
+a11y_native:
+  pattern: combobox-aria-1.2
+  required:
+    - "Input com role='combobox' + aria-autocomplete='list' + aria-expanded + aria-controls"
+    - "Listbox com role='listbox' + id referenciado por aria-controls"
+    - "Options com role='option' + aria-selected"
+    - "aria-activedescendant aponta pra option focada (sem mover DOM focus do input)"
+    - "Setas Up/Down navegam options; Home/End primeiro/último"
+    - "Enter seleciona; Escape fecha listbox sem confirmar"
+    - "Typing filtra (debounce 150ms)"
+    - "Loading state com aria-busy='true' no listbox"
+    - "Empty state com mensagem aria-live='polite'"
+
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: stack-sm
+  container_padding: inset-md
+  heading_association_respected: true
+  first_last_reset_required: true
+  composition_gap: null
+  exceptions: []
+
+tokens:
+  shared:
+    bg: --semantic-bg-surface
+    text: --semantic-text-primary
+    label-text: --semantic-text-secondary
+    border: --semantic-border-default
+    border-focus: --semantic-border-focus
+    radius: --semantic-radius-control
+    shadow-listbox: --semantic-shadow-overlay
+    z-listbox: --semantic-z-dropdown
+
+a11y:
+  role: combobox
+  keyboard: [ArrowUp, ArrowDown, Home, End, Enter, Escape, Tab, "letras"]
+  required_aria:
+    - "input.role=combobox"
+    - "input.aria-autocomplete=list"
+    - "input.aria-expanded"
+    - "input.aria-controls"
+    - "input.aria-activedescendant"
+    - "listbox.role=listbox"
+    - "options.role=option + aria-selected"
+  wcag_criteria: ["1.4.3", "2.1.1", "2.4.7", "2.5.5"]
+
+api:
+  props:
+    label: { type: string, required: true }
+    options: { type: "Array<{value, label}>", required: true }
+    value: { type: string, required: false }
+    onChange: { type: function, required: false }
+    placeholder: { type: string, default: "Selecionar" }
+    isLoading: { type: boolean, default: false }
+    isError: { type: boolean, default: false }
+    isDisabled: { type: boolean, default: false }
+  events: [onChange, onFocus, onBlur]
+
+outputs: [tsx, types, contract, stories]
+
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-15
+  round: 3
+  wave: overlay-lot-3

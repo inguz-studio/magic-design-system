@@ -1,0 +1,67 @@
+# =============================================================================
+# theme.template.yaml — Declaração de tema por produto Shelflix
+# =============================================================================
+# Cada produto da família Shelflix (4 projetos) tem um arquivo deste no
+# diretório `themes/`. mds-ops compila esse YAML em `output/themes/<product>.css`.
+#
+# Tema = override de Hubs/Semantic. NÃO modifica primitives, NÃO modifica
+# componentes. Toda a estrutura visual herda; só identidade muda.
+# =============================================================================
+
+# ── IDENTIDADE DO PRODUTO ────────────────────────────────────────────────────
+product: shelflix-X                # kebab-case, único entre os 4 produtos
+based_on: shelflix-admin           # tema base (default: shelflix-admin)
+display_name: "Shelflix X"         # nome humano para docs/showcase
+description: "Produto X da família Shelflix — descrição breve do escopo."
+
+# ── SCOPING ──────────────────────────────────────────────────────────────────
+# Como o CSS gerado vai escopar o tema. Default: data-product attribute.
+scope:
+  selector: '[data-product="shelflix-X"]'
+  # Alternativas: '.shelflix-x', ':root' (se for o único produto no HTML)
+
+# ── OVERRIDES DE HUBS ────────────────────────────────────────────────────────
+# Apenas declare hubs que MUDAM em relação ao tema base. Hubs não listados
+# herdam automaticamente.
+hub_overrides:
+  # Exemplo (descomentar e ajustar):
+  # --hub-primary: "#1A73E8"        # azul em vez de laranja
+  # --hub-accent: "#FFC107"         # amarelo em vez de roxo
+  # --hub-secondary: "#94A3B8"      # cinza-azulado
+
+# ── OVERRIDES DE SEMANTIC (raros) ────────────────────────────────────────────
+# Use APENAS se o produto precisa override semantic além do que cascade
+# automático dos hubs já resolve. Caso comum: vazio.
+semantic_overrides: {}
+  # Exemplo:
+  # --semantic-bg-canvas: "#FAFAFA"  # fundo claro em produto consumer
+
+# ── DARK MODE ────────────────────────────────────────────────────────────────
+# Se o produto suporta dark mode com overrides distintos do tema base.
+dark_mode:
+  enabled: false                   # default false; shelflix-admin é dark-first nativo
+  # Se enabled: true, declarar overrides em dark_overrides
+  dark_overrides: {}
+  # Exemplo:
+  # --hub-primary: "#3B82F6"        # primário mais claro pra contraste
+
+# ── ASSETS DE MARCA ──────────────────────────────────────────────────────────
+# Logo/favicon/fonte específicos do produto. mds-ops não copia; só registra
+# referência pro time saber onde estão.
+brand:
+  logo: "assets/logo.svg"
+  favicon: "assets/favicon.ico"
+  font_family: "Sora"              # default da família; override se produto X usa outra
+
+# ── COMPONENTES BLOQUEADOS ───────────────────────────────────────────────────
+# Lista componentes que NÃO devem aparecer neste produto (ex: produto consumer
+# não precisa de DataTable admin). Vazio = todos disponíveis.
+blocked_components: []
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-ops
+  created: <YYYY-MM-DD>
+  last_modified: <YYYY-MM-DD>
+  consumers:
+    - "Repo do produto X (NPM: @shelflix/design-css + @shelflix/design-tokens/themes/shelflix-X.css)"

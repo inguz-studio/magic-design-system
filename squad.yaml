@@ -1,0 +1,82 @@
+name: magic-ds
+version: 2.0.0
+description: "Squad especializado em Design System Engineering com split UI/UX (Round 5). Arquitetura 3 camadas (Primitive/Semantic/Component), tokens.json W3C, prefix configurável, multi-product/multi-tenant, showroom 8-section padronizado."
+author: "Antigravity & Vitor Eduardo"
+license: MIT
+slashPrefix: mds
+
+aios:
+  minVersion: "2.1.0"
+  type: squad
+
+components:
+  agents:
+    - mds-orchestrator.md
+    - mds-librarian.md
+    - mds-ui.md                # NOVO (Round 5) — fidelidade visual + theme regression
+    - mds-ux.md                # NOVO (Round 5) — heuristic + IA + critique (ex-audit promovido)
+    - mds-audit.md             # DEPRECATED (Round 5) — redirect pra ui/ux
+    - mds-foundations.md
+    - mds-tokens.md
+    - mds-governance.md
+    - mds-component.md
+    - mds-ops.md
+  tasks:
+    - visual-grooming.md
+    - onboarding-policy.md
+    - build-foundations.md
+    - validate-tokens-json.md
+    - build-tokens.md
+    - figma-tokens-sync.md
+    - enforce-governance.md
+    - map-components.md
+    - generate-ops-code.md
+    - build-local-showcase.md
+    - audit-showcase.md
+    - index-state.md
+    - lookup-artifact.md
+    - diff-snapshots.md
+  workflows:
+    - magic-ds-pipeline.yaml
+  checklists:
+    # Heuristic / UX
+    - nielsen-heuristics-checklist.md
+    - a11y-wcag-checklist.md
+    - design-principles-checklist.md
+    # UI checks (Round 5)
+    - multi-theme-checklist.md            # NOVO
+    - responsive-checklist.md             # NOVO
+    - layout-regression-checklist.md      # NOVO
+    # Pre-delivery (cherry-pick + bulk)
+    - ui-pre-delivery-checklist.md
+    - ui-pro-max-pre-delivery.md
+    # External knowledge absorbed (ui-ux-pro-max)
+    - ui-ux-pro-max-guidelines.md         # 99 UX guidelines
+    - ui-pro-max-ui-checks.md             # ~110 UI checks
+    - ui-pro-max-ux-checks.md             # ~73 UX checks
+    - ui-pro-max-a11y-joint.md            # 20 A11y joint
+  templates:
+    - index.template.md
+    - component.spec.template.yaml
+  tools: []
+  scripts: []
+
+config:
+  extends: none
+  source-tree: config/source-tree.md
+  policy: config/squad-policy.yaml
+  coding-standards: config/coding-standards.md
+  tech-stack: config/tech-stack.md
+
+dependencies:
+  node: []
+  squads: []
+
+tags:
+  - design-system
+  - ui-ux
+  - grooming
+  - tailwind
+  - figma-bridge
+  - aios
+  - multi-agent

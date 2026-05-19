@@ -1,0 +1,268 @@
+# =============================================================================
+# Button.spec.yaml — Contrato do componente Button (Shelflix Admin)
+# =============================================================================
+# Migrado pro template v2 (dual output: canonical CSS+HTML + adapter React+TW).
+# =============================================================================
+
+component: Button
+version: 0.2.0
+kind: generic
+status: draft
+category: control
+atomic_level: atom
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: button
+  install_path: /src/vendor/button.tsx
+  import_alias: "@/vendor/button"
+
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+variants:
+  intent: [primary, secondary, ghost, danger]
+
+sizes: [sm, md, lg]
+
+states:
+  - default
+  - hover
+  - focus-visible
+  - active
+  - disabled
+  - loading
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: btn
+  elements:
+    - spinner
+  modifiers:
+    intent: [primary, secondary, ghost, danger]
+    size: [sm, md, lg]
+    state: [disabled, loading]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <button class="btn btn--{intent} btn--{size}" type="button">
+    <!-- spinner slot — visível apenas quando btn--loading -->
+    <span class="btn__spinner" aria-hidden="true"></span>
+    <!-- {children} — label textual do botão -->
+    {children}
+  </button>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    radius: --semantic-radius-control
+    typography: --semantic-type-action
+    motion: --semantic-motion-interaction
+    sm:
+      height: 2rem
+      padding-inline: --semantic-space-inset-md
+      gap: --semantic-space-inline-xs
+      font-size: --primitive-text-xs
+    md:
+      height: 2.5rem
+      padding-inline: --semantic-space-inset-lg
+      gap: --semantic-space-inline-sm
+      font-size: --primitive-text-sm
+    lg:
+      height: 3rem
+      padding-inline: --semantic-space-inset-xl
+      gap: --semantic-space-inline-sm
+      font-size: --primitive-text-base
+
+  primary:
+    default:
+      background: --semantic-bg-brand
+      text: --semantic-text-on-brand
+      border: transparent
+    hover:
+      background: --semantic-bg-brand-hover
+    disabled:
+      background: --semantic-bg-muted
+      text: --semantic-text-disabled
+
+  secondary:
+    default:
+      background: transparent
+      text: --semantic-text-brand
+      border: --semantic-border-brand
+    hover:
+      background: --semantic-bg-brand-subtle
+    disabled:
+      text: --semantic-text-disabled
+      border: --semantic-border-subtle
+
+  ghost:
+    default:
+      background: transparent
+      text: --semantic-text-primary
+      border: transparent
+    hover:
+      background: --semantic-bg-subtle
+    disabled:
+      text: --semantic-text-disabled
+
+  danger:
+    default:
+      background: --semantic-bg-danger-solid
+      text: --semantic-text-on-danger
+      border: transparent
+    hover:
+      background: --semantic-bg-danger-solid-hover
+    focus-visible:
+      outline: --semantic-border-error
+    disabled:
+      background: --semantic-bg-muted
+      text: --semantic-text-disabled
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-sm
+  internal_group_gap: n/a
+  container_padding: inset-md
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions: []
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: button
+  semantic_element: button
+  keyboard:
+    - Enter
+    - Space
+  focus_visible: required
+  required_aria:
+    - aria-label
+    - aria-busy
+    - aria-disabled
+  wcag_criteria:
+    - "1.4.3"
+    - "1.4.11"
+    - "2.1.1"
+    - "2.4.7"
+    - "2.5.5"
+  notes:
+    - "Durante loading, manter o botão renderizado (não desmontar) para preservar foco."
+    - "Disabled NÃO remove do tab order quando aria-disabled=true."
+
+# ── CONTEÚDO (COPY DE REFERÊNCIA) ────────────────────────────────────────────
+content:
+  button.action.save: "Salvar"
+  button.action.cancel: "Cancelar"
+  button.action.confirm: "Confirmar"
+  button.action.delete: "Excluir"
+  button.action.edit: "Editar"
+  button.action.add: "Adicionar"
+  button.action.close: "Fechar"
+  button.state.loading: "Carregando..."
+  button.state.loading.save: "Salvando..."
+  button.state.loading.delete: "Excluindo..."
+  button.state.loading.send: "Enviando..."
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    variant:
+      type: enum
+      values: [primary, secondary, ghost, danger]
+      default: primary
+      required: false
+      description: "Hierarquia visual e semântica da ação."
+    size:
+      type: enum
+      values: [sm, md, lg]
+      default: md
+      required: false
+    isDisabled:
+      type: boolean
+      default: false
+      required: false
+    isLoading:
+      type: boolean
+      default: false
+      required: false
+      description: "Exibe spinner inline, seta aria-busy, mantém width."
+    disabled:
+      type: boolean
+      default: false
+      required: false
+    children:
+      type: ReactNode
+      required: true
+      description: "Label do botão."
+    onClick:
+      type: function
+      signature: "(event: React.MouseEvent<HTMLButtonElement>) => void"
+      required: false
+  events:
+    - onClick
+    - onFocus
+    - onBlur
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+# Resolvidos em foundations/06-foundations-round-1-6.md (histórico):
+#   --semantic-bg-danger-solid       → var(--primitive-error)
+#   --semantic-bg-danger-solid-hover → var(--primitive-error-dark)
+#   --semantic-text-on-danger        → #FFFFFF
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    node: TBD
+    typography_source: "Button/Action (14px, 600, lh=100%)"
+  audit: squads/magic-ds/audit/01-figma-extraction.md
+  foundations: squads/magic-ds/foundations/02-token-architecture.md
+  governance: squads/magic-ds/governance/03-governance-validation.md
+  output:
+    canonical_css: squads/magic-ds/output/css/btn.css
+    canonical_html: squads/magic-ds/output/html/btn.html
+    adapter_react: src/components/atoms/Button/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-13
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+  template_version: 2.0.0
+  migration_notes:
+    - "2026-05-14: migrado pro template v2 dual-output. Adicionado bem:, html_structure:, products:, outputs: canonical+adapter. Versão 0.1.0 → 0.2.0 (já era 0.2.0, confirmado)."
+    - "CVA substituído por classes BEM estáticas no adapter React."
+
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - action
+
+# Next required step: mds-audit *design-check --target Button.spec.yaml.
+# Cannot proceed to mds-ops until score >= B.

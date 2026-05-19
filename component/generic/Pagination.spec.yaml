@@ -1,0 +1,269 @@
+# =============================================================================
+# Pagination.spec.yaml — Paginação de tabelas e listas
+# =============================================================================
+# Migrado pro template v2 (dual output: canonical CSS+HTML + adapter React+TW).
+# =============================================================================
+
+component: Pagination
+version: 0.2.0
+kind: generic
+status: draft
+category: navigation
+atomic_level: molecule
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: pagination
+  install_path: /src/vendor/pagination.tsx
+  import_alias: "@/vendor/pagination"
+
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+variants: {}
+
+sizes: []
+
+states:
+  - default
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: pagination
+  elements:
+    - info
+    - pages
+    - page-btn
+    - ellipsis
+    - next-btn
+  modifiers:
+    intent: []
+    size: []
+    state: [active, disabled]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <nav class="pagination" aria-label="Paginação">
+    <!-- info region -->
+    <span class="pagination__info">
+      Mostrando {start}-{end} de {total} {itemLabel}
+    </span>
+
+    <!-- pages region -->
+    <div class="pagination__pages">
+      <!-- page button (default) -->
+      <button class="pagination__page-btn" type="button" aria-label="Ir para página {n}">
+        {n}
+      </button>
+      <!-- page button (active) -->
+      <button class="pagination__page-btn pagination__page-btn--active"
+              type="button" aria-current="page" aria-label="Página atual, {n}">
+        {n}
+      </button>
+      <!-- ellipsis -->
+      <span class="pagination__ellipsis" aria-hidden="true">…</span>
+    </div>
+
+    <!-- next button -->
+    <button class="pagination__next-btn" type="button" aria-label="Próxima página">
+      Próximo
+      <!-- chevron right SVG -->
+    </button>
+  </nav>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    background: --semantic-bg-surface
+    border: --semantic-border-default
+    border-radius: --semantic-radius-surface
+    padding-block: --semantic-space-inset-md
+    padding-inline: --semantic-space-inset-xl
+    gap: --semantic-space-inline-lg
+    motion: --semantic-motion-interaction
+
+  info-text:
+    font-size: --primitive-text-xs
+    text: --semantic-text-tertiary
+
+  page-button:
+    height: 2rem
+    min-width: 2rem
+    border-radius: --semantic-radius-control
+    font-size: --primitive-text-sm
+    font-weight: 600
+    padding-inline: --semantic-space-inset-sm
+    default:
+      background: transparent
+      text: --semantic-text-secondary
+    hover:
+      background: --semantic-bg-subtle
+      text: --semantic-text-primary
+    focus-visible:
+      outline: --semantic-border-focus
+      outline-width: 2px
+      outline-offset: 2px
+    active:
+      background: --semantic-bg-brand
+      text: --semantic-text-on-brand
+      cursor: default
+
+  ellipsis:
+    font-size: --primitive-text-sm
+    text: --semantic-text-tertiary
+    cursor: default
+
+  next-button:
+    height: 2rem
+    padding-inline: --semantic-space-inset-lg
+    border-radius: --semantic-radius-control
+    font-size: --primitive-text-sm
+    font-weight: 600
+    gap: --semantic-space-inline-xs
+    default:
+      background: --semantic-bg-subtle
+      text: --semantic-text-primary
+    hover:
+      background: --semantic-bg-muted
+    focus-visible:
+      outline: --semantic-border-focus
+    disabled:
+      background: --semantic-bg-subtle
+      text: --semantic-text-disabled
+      cursor: not-allowed
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: inline-sm
+  internal_group_gap: inline-lg
+  container_padding: inset-lg
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions:
+    - "Ellipsis '…' mantém min-width igual aos page buttons pra preservar ritmo horizontal."
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: navigation
+  semantic_element: nav
+  keyboard:
+    - Tab
+    - Enter
+    - Space
+  focus_visible: required
+  required_aria:
+    - "aria-label na nav (rotula a navegação)"
+    - "aria-current='page' no PageButton da página atual"
+    - "aria-disabled quando next/prev sem destino"
+    - "aria-hidden='true' no Ellipsis"
+  wcag_criteria:
+    - "1.4.3"
+    - "2.1.1"
+    - "2.4.7"
+    - "2.5.5"
+  notes:
+    - "PageButton da página atual NÃO deve ser clicável (cursor:default, aria-current=page)."
+    - "Ellipsis '...' deve ter aria-hidden=true — é decorativo, não navegável."
+
+# ── CONTEÚDO (COPY DE REFERÊNCIA) ────────────────────────────────────────────
+content:
+  pagination.aria-label: "Paginação"
+  pagination.showing: "Mostrando {start}-{end} de {total} {itemLabel}"
+  pagination.item-label.default: "itens"
+  pagination.item-label.category: "categorias"
+  pagination.item-label.material: "materiais"
+  pagination.next: "Próximo"
+  pagination.aria-current: "Página atual, {page}"
+  pagination.aria-go-to: "Ir para página {page}"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    currentPage:
+      type: number
+      required: true
+      description: "Página atual (1-indexed)."
+    totalPages:
+      type: number
+      required: true
+    pageSize:
+      type: number
+      required: true
+    totalItems:
+      type: number
+      required: true
+    itemLabel:
+      type: string
+      default: "itens"
+      required: false
+    maxVisiblePages:
+      type: number
+      default: 7
+      required: false
+    onPageChange:
+      type: function
+      signature: "(page: number) => void"
+      required: true
+  events:
+    - onPageChange
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    nodes:
+      - "130:1902 (Paginação de tabelas — master)"
+      - "130:1966 (instance no Editor de Tabela)"
+  audit: squads/magic-ds/audit/04-figma-complete-audit.md
+  foundations: squads/magic-ds/foundations/02-token-architecture.md
+  governance: squads/magic-ds/governance/03-governance-validation.md
+  output:
+    canonical_css: squads/magic-ds/output/css/pagination.css
+    canonical_html: squads/magic-ds/output/html/pagination.html
+    adapter_react: src/components/molecules/Pagination/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-13
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+  template_version: 2.0.0
+  used_in: [DataTable]
+  migration_notes:
+    - "2026-05-14: migrado pro template v2 dual-output. Adicionado bem:, html_structure:, products:, outputs: canonical+adapter. Utility classes substituídas por classes BEM no adapter React."
+
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - body
+  - action
+
+# Next required step: mds-audit *design-check --target Pagination.spec.yaml.
+# Cannot proceed to mds-ops until score >= B.

@@ -1,0 +1,266 @@
+# =============================================================================
+# Tabs.spec.yaml — Contrato canônico Round 4
+# Spec criado retroativamente — CSS+adapter existiam desde Round 3.3 sem spec
+# formal no template v2. Upgradeado em 2026-05-19.
+# =============================================================================
+
+component: Tabs
+version: 0.1.0
+kind: generic
+status: draft
+category: navigation
+atomic_level: molecule
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+# Tabs na vendor_whitelist (squad-policy.yaml). Radix Tabs via @/vendor/tabs.
+vendor:
+  primitive: tabs
+  install_path: src/vendor/tabs.tsx
+  import_alias: "@/vendor/tabs"
+
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+variants:
+  orientation: [horizontal, vertical]
+  activation: [automatic, manual]
+
+sizes: []
+
+states:
+  - active
+  - inactive
+  - disabled
+  - focus-visible
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: tabs
+  elements:
+    - list
+    - trigger
+    - panel
+  modifiers:
+    orientation: [vertical]
+    state: [disabled]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <!-- orientation=horizontal (default) -->
+  <div class="tabs">
+    <div class="tabs__list" role="tablist" aria-label="Seções">
+      <button class="tabs__trigger"
+              role="tab"
+              aria-selected="true"
+              aria-controls="panel-geral"
+              id="tab-geral"
+              tabindex="0">
+        Geral
+      </button>
+      <button class="tabs__trigger"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panel-detalhes"
+              id="tab-detalhes"
+              tabindex="-1">
+        Detalhes
+      </button>
+    </div>
+    <div class="tabs__panel"
+         role="tabpanel"
+         id="panel-geral"
+         aria-labelledby="tab-geral"
+         tabindex="0">
+      Conteúdo geral
+    </div>
+  </div>
+
+  <!-- orientation=vertical -->
+  <div class="tabs tabs--vertical">
+    <div class="tabs__list" role="tablist" aria-orientation="vertical" aria-label="Seções">
+      <button class="tabs__trigger" role="tab" aria-selected="true" tabindex="0">Geral</button>
+      <button class="tabs__trigger" role="tab" aria-selected="false" tabindex="-1">Detalhes</button>
+    </div>
+    <div class="tabs__panel" role="tabpanel" tabindex="0">Conteúdo geral</div>
+  </div>
+
+# ── A11Y NATIVA ──────────────────────────────────────────────────────────────
+a11y_native:
+  pattern: tabs-aria
+  required:
+    - "tablist: role='tablist' + aria-label descritivo"
+    - "tablist vertical: aria-orientation='vertical'"
+    - "trigger: role='tab' + aria-selected + aria-controls + id único"
+    - "panel: role='tabpanel' + aria-labelledby (id do trigger) + tabindex='0'"
+    - "Roving tabindex: só trigger ativo tem tabindex=0; demais -1"
+    - "Horizontal: ArrowLeft/ArrowRight navegam; vertical: ArrowUp/ArrowDown"
+    - "Home: primeiro trigger; End: último trigger"
+    - "activation=automatic: mover foco ativa tab imediatamente"
+    - "activation=manual: foco navega, Enter ou Space ativa"
+    - "disabled trigger: aria-disabled='true', tabindex=-1, não ativável"
+
+# ── TOKENS ───────────────────────────────────────────────────────────────────
+tokens:
+  shared:
+    gap-stack: --sf-space-stack-md
+    gap-inline: --sf-space-inline-xs
+    border: --sf-border
+    text-active: --sf-text-primary
+    text-inactive: --sf-text-secondary
+    text-disabled: --sf-text-disabled
+    border-active: --sf-border-focus
+    motion: --sf-motion-interaction
+    focus-ring: --sf-shadow-focus-ring
+    radius-control: --sf-radius-control-sm
+    radius-surface: --sf-radius-surface
+    space-inset-sm: --sf-space-inset-sm
+    space-inset-md: --sf-space-inset-md
+    type-body-strong: --sf-type-body-strong
+
+# ── DRIFT DETECTION ──────────────────────────────────────────────────────────
+tokens_type:
+  - body-strong
+
+tokens_shadow:
+  - focus-ring
+
+tokens_motion:
+  - interaction
+
+tokens_z: []
+
+tokens_container: []
+
+tokens_icon: []
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: inline-xs
+  internal_group_gap: stack-md
+  container_padding: null
+  heading_association_respected: false
+  first_last_reset_required: false
+  composition_gap: stack-md
+  exceptions:
+    - "Tabs não tem container padding próprio — conteúdo do panel define seu próprio padding"
+    - "Vertical: list tem min-inline-size: 10rem; gap entre list e panel vem do flex row do bloco"
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: tablist
+  semantic_element: div
+  keyboard:
+    - ArrowLeft
+    - ArrowRight
+    - ArrowUp
+    - ArrowDown
+    - Home
+    - End
+    - Enter
+    - Space
+    - Tab
+  focus_visible: required
+  required_aria:
+    - list.role=tablist
+    - list.aria-label
+    - list.aria-orientation (quando vertical)
+    - trigger.role=tab
+    - trigger.aria-selected
+    - trigger.aria-controls
+    - trigger.id
+    - panel.role=tabpanel
+    - panel.aria-labelledby
+    - panel.tabindex=0
+  wcag_criteria:
+    - "1.4.3"
+    - "2.1.1"
+    - "2.4.3"
+    - "2.4.7"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    items:
+      type: "TabsItem[]"
+      required: true
+      description: "Array de tabs. Cada item: { value: string; label: ReactNode; icon?: ReactNode; disabled?: boolean; content: ReactNode }."
+    defaultValue:
+      type: string
+      required: false
+      description: "Tab ativa no mount (uncontrolled). Default: primeiro item."
+    value:
+      type: string
+      required: false
+      description: "Tab ativa controlada externamente."
+    onValueChange:
+      type: function
+      required: false
+      description: "(value: string) => void — chamado quando tab muda."
+    orientation:
+      type: enum
+      values: [horizontal, vertical]
+      default: horizontal
+      required: false
+      description: "Layout horizontal (default) ou vertical (list na lateral)."
+    activation:
+      type: enum
+      values: [automatic, manual]
+      default: automatic
+      required: false
+      description: "automatic: foco ativa; manual: Enter/Space ativa."
+    className:
+      type: string
+      required: false
+      description: "Classe adicional injetada no elemento raiz."
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    node: TBD
+  foundations: squads/magic-ds/foundations/07-token-architecture-v3.md
+  governance: squads/magic-ds/governance/matrix.md
+  component_kinds: squads/magic-ds/governance/component-kinds.md
+  canonical_css: squads/magic-ds/output/css/tabs.css
+  adapter: src/components/molecules/Tabs/Tabs.tsx
+  squad_spec: squads/magic-ds/component/generic/Tabs.spec.yaml
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-19
+  round: 4
+  wave: post-cleanup
+  notes: |
+    Spec criado retroativamente em 2026-05-19 — componente existia em CSS+adapter
+    desde Round 3.3 (wave overlay-lot-4) mas sem spec no template v2 completo.
+    Upgradeado de stub Round 3 para spec Round 4 em 2026-05-19.
+    Adapter em molecules/ (não organisms/) — atomic_level molecule confirmado pela
+    estrutura: compõe list+triggers+panels mas não orquestra múltiplos organismos.
+    CSS inclui density override [data-density="compact"] + coarse pointer guard.

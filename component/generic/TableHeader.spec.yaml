@@ -1,0 +1,73 @@
+component: TableHeader
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: display
+atomic_level: atom
+
+vendor:
+  primitive: null
+  install_path: null
+  import_alias: null
+  note: "Elemento HTML nativo <th> com scope=col"
+
+variants:
+  align: [left, center, right]
+
+sizes: []
+states: [default]
+
+tokens:
+  shared:
+    background: --semantic-bg-subtle
+    text: --semantic-text-secondary
+    typography: --primitive-text-xs
+    font-weight: 600
+    text-transform: uppercase
+    letter-spacing: "0.04em"
+    padding-inline: --semantic-space-inset-lg
+    padding-block: --semantic-space-inset-sm
+    border-bottom: --semantic-border-default
+
+rhythm:
+  internal_item_gap: n/a
+  internal_group_gap: n/a
+  container_padding: inset-sm
+  heading_association_respected: true
+  first_last_reset_required: false
+  exceptions: []
+
+a11y:
+  semantic_element: th
+  required_aria: ["scope=col (auto-set)"]
+  wcag_criteria: ["1.3.1", "1.4.3"]
+
+api:
+  props:
+    align: { type: enum, values: [left, center, right], default: left }
+    children: { type: ReactNode, required: true }
+
+outputs: [tsx, types, contract, stories]
+
+composes: []
+
+gaps_for_foundations: []
+
+references:
+  squad_spec: squads/magic-ds/component/TableHeader.spec.yaml
+
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - label
+
+# Next required step: mds-audit *design-check --target TableHeader.spec.yaml.
+# Cannot proceed to mds-ops until score ≥ B.

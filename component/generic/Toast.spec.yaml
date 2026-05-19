@@ -1,0 +1,264 @@
+# =============================================================================
+# Toast.spec.yaml — Contrato canônico Round 4
+# Spec criado retroativamente — CSS+adapter existiam desde Round 3.3 sem spec
+# formal no template v2. Upgradeado em 2026-05-19.
+# =============================================================================
+
+component: Toast
+version: 0.1.0
+kind: generic
+status: draft
+category: feedback
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+# Toast na vendor_whitelist (squad-policy.yaml). Usa primitivo sonner.
+vendor:
+  primitive: sonner
+  install_path: src/vendor/sonner.tsx
+  import_alias: "@/vendor/sonner"
+
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+variants:
+  tone: [info, success, warning, danger]
+
+sizes: []
+
+states:
+  - enter
+  - visible
+  - exit
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: toast
+  elements:
+    - icon
+    - body
+    - title
+    - description
+    - close
+  modifiers:
+    tone: [info, success, warning, danger]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <!-- Region container — montado uma vez no shell via ToastProvider -->
+  <ol class="toast-region" aria-live="polite" aria-label="Notificações">
+    <!-- Toast individual: tone=success -->
+    <li class="toast toast--success" role="status">
+      <span class="toast__icon" aria-hidden="true"><!-- ícone --></span>
+      <div class="toast__body">
+        <strong class="toast__title">Salvo com sucesso</strong>
+        <span class="toast__description">As alterações foram aplicadas.</span>
+      </div>
+      <button type="button" class="toast__close" aria-label="Fechar">×</button>
+    </li>
+
+    <!-- Toast danger: usa role=alert (assertive) -->
+    <li class="toast toast--danger" role="alert">
+      <span class="toast__icon" aria-hidden="true"><!-- ícone --></span>
+      <div class="toast__body">
+        <strong class="toast__title">Erro ao salvar</strong>
+        <span class="toast__description">Verifique sua conexão e tente novamente.</span>
+      </div>
+      <button type="button" class="toast__close" aria-label="Fechar">×</button>
+    </li>
+  </ol>
+
+# ── A11Y NATIVA ──────────────────────────────────────────────────────────────
+a11y_native:
+  pattern: toast-live-region
+  required:
+    - "Region container: aria-live='polite' para info/success/warning"
+    - "Region container: aria-live='assertive' para danger (erros críticos)"
+    - "Toast item: role='status' para polite; role='alert' para assertive"
+    - "close button: aria-label='Fechar'"
+    - "Auto-dismiss pausa em hover/focus dentro da região (sonner gerencia)"
+    - "Tab move foco para close button quando toast está visível"
+    - "duration mínimo 5000ms (WCAG 2.2.1)"
+
+# ── TOKENS ───────────────────────────────────────────────────────────────────
+tokens:
+  shared:
+    bg: --sf-bg-surface
+    text: --sf-text-primary
+    border: --sf-border
+    radius: --sf-radius-surface
+    shadow: --sf-shadow-toast
+    z-index: --sf-z-toast
+    space-inset: --sf-space-inset-md
+    space-inline: --sf-space-inline-sm
+    space-stack: --sf-space-stack-xs
+    space-stack-sm: --sf-space-stack-sm
+    space-stack-md: --sf-space-stack-md
+    type-body: --sf-type-body
+    type-body-strong: --sf-type-body-strong
+    type-body-sm: --sf-type-body-sm
+    text-secondary: --sf-text-secondary
+    text-tertiary: --sf-text-tertiary
+    icon-control: --sf-icon-control
+    close-size: --sf-size-control-sm
+    radius-control-sm: --sf-radius-control-sm
+    focus-ring: --sf-shadow-focus-ring
+  info:
+    default:
+      accent: --sf-status-info
+  success:
+    default:
+      accent: --sf-status-success
+  warning:
+    default:
+      accent: --sf-status-warning
+  danger:
+    default:
+      accent: --sf-status-danger
+
+# ── DRIFT DETECTION ──────────────────────────────────────────────────────────
+tokens_type:
+  - body
+  - body-strong
+  - body-sm
+
+tokens_shadow:
+  - focus-ring
+  - toast
+
+tokens_motion: []
+
+tokens_z:
+  - toast
+
+tokens_container: []
+
+tokens_icon:
+  - control
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: stack-sm
+  container_padding: inset-md
+  heading_association_respected: false
+  first_last_reset_required: true
+  composition_gap: stack-sm
+  exceptions:
+    - "Region container é grid/flex coluna; gap entre toasts empilhados: stack-sm"
+    - "Toast usa grid-template-columns: auto 1fr auto (icon / body / close)"
+    - "Region posicionada fixed bottom-right via space-stack-md do sistema"
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: status
+  semantic_element: div
+  keyboard:
+    - Tab
+    - Escape
+  focus_visible: required
+  required_aria:
+    - region.aria-live=polite (info/success/warning) ou assertive (danger)
+    - toast.role=status (polite) ou alert (assertive)
+    - close.aria-label=Fechar
+  wcag_criteria:
+    - "1.4.3"
+    - "2.2.1"
+    - "2.2.3"
+    - "4.1.3"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+# Toast expõe ToastProvider (componente) + notify (função imperativa).
+api:
+  props:
+    # ToastProvider — montado uma vez no shell do app
+    position:
+      type: enum
+      values: [top-left, top-right, top-center, bottom-left, bottom-right, bottom-center]
+      default: bottom-right
+      required: false
+      description: "Posição da região de notificações na tela."
+    duration:
+      type: number
+      default: 5000
+      required: false
+      description: "Duração padrão em ms antes do auto-dismiss."
+  fn:
+    name: notify
+    args:
+      title:
+        type: ReactNode
+        required: false
+        description: "Título em negrito do toast."
+      description:
+        type: ReactNode
+        required: false
+        description: "Texto secundário abaixo do título."
+      tone:
+        type: enum
+        values: [info, success, warning, danger]
+        default: info
+        required: false
+        description: "Tom visual e semântico. danger usa aria-live=assertive."
+      id:
+        type: "string | number"
+        required: false
+        description: "ID para dedup ou dismiss programático via notify.dismiss(id)."
+      duration:
+        type: number
+        required: false
+        description: "Override da duração padrão para este toast específico."
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    node: TBD
+  foundations: squads/magic-ds/foundations/07-token-architecture-v3.md
+  governance: squads/magic-ds/governance/matrix.md
+  component_kinds: squads/magic-ds/governance/component-kinds.md
+  canonical_css: squads/magic-ds/output/css/toast.css
+  adapter: src/components/organisms/Toast/Toast.tsx
+  vendor: src/vendor/sonner.tsx
+  squad_spec: squads/magic-ds/component/generic/Toast.spec.yaml
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-19
+  round: 4
+  wave: post-cleanup
+  notes: |
+    Spec criado retroativamente em 2026-05-19 — componente existia em CSS+adapter
+    desde Round 3.3 (wave overlay-lot-4) mas sem spec no template v2 completo.
+    Upgradeado de stub Round 3 para spec Round 4 em 2026-05-19.
+    API dual: ToastProvider (JSX) monta o Toaster; notify() dispara toasts
+    imperativamente de qualquer lugar. Sonner gerencia animações e stacking.
+    tone=danger deve usar aria-live=assertive no region — implementado via
+    notify() que cria elemento customizado com role=alert.

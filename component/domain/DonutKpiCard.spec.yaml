@@ -1,0 +1,187 @@
+# =============================================================================
+# DonutKpiCard.spec.yaml — KPI com donut chart SVG + legenda
+# =============================================================================
+# Especialização do KpiCardShell pra representação visual de distribuição
+# em formato de donut SVG com:
+#   - SVG donut chart com múltiplos segmentos via stroke-dasharray
+#   - label central: valor grande + percentual
+#   - legenda horizontal com swatch colorido + label por segmento
+# =============================================================================
+
+component: DonutKpiCard
+version: 0.1.0
+kind: domain
+domain:
+  tenant_origin: shelflix
+  business_concept: "KPI categorico visualizado como rosca SVG"
+  use_cases:
+    - "Distribuicao percentual entre categorias (conformes vs nao-conformes)"
+status: draft
+category: display
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: null
+# ── CONTRATO DE VARIANTES ────────────────────────────────────────────────────
+variants: {}
+sizes: []
+states: [default]
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: donut-kpi
+  elements:
+    - chart-wrap       # container relativo do SVG + center overlay
+    - chart            # elemento <svg> do donut
+    - center           # overlay central absoluto
+    - center-value     # texto grande central (ex: "77.456h")
+    - center-percent   # texto pequeno central (ex: "(100%)")
+    - legend           # linha de legenda abaixo do chart
+    - legend-item      # item individual (swatch + label)
+    - legend-swatch    # bolinha colorida da legenda
+    - legend-label     # texto do item de legenda
+  modifiers: {}
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <article class="kpi-card">
+    <header class="kpi-card__header">
+      <span class="kpi-card__icon" aria-hidden="true"><!-- {icon} --></span>
+      <h4 class="kpi-card__title">{title}</h4>
+    </header>
+    <div class="kpi-card__body">
+      <div class="donut-kpi__chart-wrap">
+        <svg class="donut-kpi__chart" viewBox="0 0 200 200" role="img" aria-label="{title}: {value}">
+          <!-- track background -->
+          <circle cx="100" cy="100" r="70" fill="none"
+                  stroke="var(--semantic-bg-subtle)" stroke-width="16" />
+          <!-- segments (calculados via stroke-dasharray inline) -->
+          <!-- style="stroke: var(--semantic-status-online)" -->
+        </svg>
+        <div class="donut-kpi__center" aria-hidden="true">
+          <span class="donut-kpi__center-value">{value}</span>
+          <span class="donut-kpi__center-percent">{percent}</span>
+        </div>
+      </div>
+      <div class="donut-kpi__legend">
+        <!-- por segmento: -->
+        <span class="donut-kpi__legend-item">
+          <span class="donut-kpi__legend-swatch" style="background: var(--semantic-status-{status})"></span>
+          <span class="donut-kpi__legend-label">{label}</span>
+        </span>
+      </div>
+    </div>
+  </article>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    donut-track-bg: --semantic-bg-subtle
+    donut-r: "70"                  # raio do círculo SVG
+    donut-stroke-width: "16"       # espessura do anel
+    center-value-size: --primitive-text-xl       # 1.5rem = 24px
+    center-value-weight: --primitive-weight-semibold
+    center-value-color: --semantic-text-primary
+    center-percent-size: --primitive-text-xs     # 12px
+    center-percent-color: --semantic-text-tertiary
+    legend-gap: --semantic-space-inline-md       # gap entre itens da legenda
+    legend-swatch-size: "10px"
+    # segment stroke colors: inline via style (runtime data — não classificável estaticamente)
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-sm
+  container_padding: inset-lg
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions:
+    - "Cores dos segmentos SVG são inline (runtime) — não há BEM modifier pra elas"
+
+# ── ACESSIBILIDADE (WCAG 2.1 AA) ─────────────────────────────────────────────
+a11y:
+  role: implicit
+  semantic_element: article
+  keyboard: []
+  focus_visible: not_applicable
+  required_aria:
+    - "donut-kpi__chart[role='img'][aria-label] — descreve dados do donut"
+    - "donut-kpi__center[aria-hidden='true'] — decorativo, já coberto pelo aria-label do svg"
+  wcag_criteria:
+    - "1.4.3"   # Contraste cor
+    - "1.4.11"  # UI contrast
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    title:
+      type: string
+      required: true
+    icon:
+      type: ReactNode
+      required: false
+    helpText:
+      type: string
+      required: false
+    value:
+      type: string
+      required: true
+      description: "Texto central grande (ex: '77.456h')."
+    percent:
+      type: string
+      required: false
+      description: "Texto central pequeno (ex: '(100%)')."
+    segments:
+      type: "{ label: string; value: number; color: string }[]"
+      required: true
+      description: "Segmentos do donut. color = nome do CSS var (ex: '--semantic-status-online'). value = quantidade absoluta (proporcional calculado internamente)."
+    className:
+      type: string
+      required: false
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+
+# ── COMPOSITION ──────────────────────────────────────────────────────────────
+composes: [KpiCardShell]
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations:
+  - "--semantic-space-inline-md: confirmar token existe em tokens.css"
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  output:
+    canonical_css: squads/magic-ds/output/css/donut-kpi.css
+    canonical_html: squads/magic-ds/output/html/donut-kpi.html
+    adapter_react: src/components/organisms/DonutKpiCard/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 3
+  template_version: 2.0.0
+  migration_notes:
+    - "2026-05-14: criado pra Dashboard (Horas transmitidas). Especialização canônica do KpiCardShell com donut SVG."
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - h2 (__center-value)
+  - micro (__legend-label)

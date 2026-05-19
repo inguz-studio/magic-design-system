@@ -1,0 +1,108 @@
+component: Modal
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: feedback
+atomic_level: organism
+
+description: |
+  Dialog modal — overlay com focus trap, escape, return focus. Pattern
+  dialog-modal. Implementação via Radix Dialog isolado em /src/vendor/dialog.tsx
+  (Round 3.3, squad-policy.yaml `allow_radix: true`). V1 native preservada em
+  `_archive/Modal.native.v1.tsx` como fallback documentado.
+  Versão `persistent` bloqueia overlay-click + escape.
+
+# Vendor (Round 3.3 — policy-aware)
+vendor:
+  primitive: dialog                  # @radix-ui/react-dialog
+  install_path: /src/vendor/dialog.tsx
+  import_alias: "@/vendor/dialog"
+  fallback_native_v1: src/components/organisms/Modal/_archive/Modal.native.v1.tsx
+
+variants:
+  size: [sm, md, lg]
+
+sizes: [sm, md, lg]
+states: [closed, open]
+
+bem:
+  block: modal
+  elements: [overlay, panel, header, title, body, footer, close]
+  modifiers:
+    size: [sm, md, lg]
+    persistent: [persistent]
+    open: [open]
+
+html_structure: |
+  <div class="modal modal--open modal--md" role="dialog" aria-modal="true"
+       aria-labelledby="modal-title-{id}">
+    <div class="modal__overlay" aria-hidden="true"></div>
+    <div class="modal__panel">
+      <header class="modal__header">
+        <h2 class="modal__title" id="modal-title-{id}">{title}</h2>
+        <button class="modal__close" type="button" aria-label="Fechar dialog">
+          <!-- SVG close icon -->
+        </button>
+      </header>
+      <div class="modal__body">{children}</div>
+      <footer class="modal__footer">{footer}</footer>
+    </div>
+  </div>
+
+a11y_native:
+  pattern: dialog-modal
+  required:
+    - "role='dialog' + aria-modal='true' no container"
+    - "aria-labelledby aponta pro título; aria-describedby pro corpo se houver"
+    - "Focus trap: Tab/Shift+Tab circula só dentro do panel"
+    - "Initial focus: primeiro focusável OU elemento marcado [data-initial-focus]"
+    - "Escape fecha"
+    - "Return focus ao trigger original ao fechar"
+    - "Overlay click fecha (a menos que persistent=true)"
+    - "Body scroll lock enquanto aberto"
+    - "z-index: var(--semantic-z-modal)"
+
+rhythm:
+  internal_item_gap: stack-md
+  internal_group_gap: stack-lg
+  container_padding: inset-lg
+  heading_association_respected: true
+  first_last_reset_required: true
+  composition_gap: null
+  exceptions: []
+
+tokens:
+  shared:
+    bg: --semantic-bg-surface
+    overlay: rgba(0,0,0,0.5)
+    border: --semantic-border-default
+    radius: --semantic-radius-surface-lg
+    shadow: --semantic-shadow-modal
+    z: --semantic-z-modal
+
+a11y:
+  role: dialog
+  keyboard: [Tab, "Shift+Tab", Escape]
+  required_aria: ["role=dialog", "aria-modal=true", "aria-labelledby"]
+  wcag_criteria: ["1.4.3", "2.1.1", "2.1.2", "2.4.3", "2.4.7"]
+
+api:
+  props:
+    isOpen: { type: boolean, required: true }
+    onClose: { type: function, required: true }
+    title: { type: string, required: true }
+    children: { type: ReactNode, required: true }
+    footer: { type: ReactNode, required: false }
+    size: { type: enum, values: [sm, md, lg], default: md }
+    persistent: { type: boolean, default: false }
+  events: [onClose]
+
+outputs: [tsx, types, contract, stories]
+
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-15
+  round: 3
+  wave: overlay-lot-4

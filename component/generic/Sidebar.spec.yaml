@@ -1,0 +1,217 @@
+# =============================================================================
+# Sidebar.spec.yaml — Sidebar de navegação principal do Shelflix Admin
+# =============================================================================
+# Migrado pro template v2 (dual output: canonical CSS+HTML + adapter React+TW).
+# =============================================================================
+
+component: Sidebar
+version: 0.2.0
+kind: generic
+status: draft
+category: navigation
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: null
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+variants:
+  state: [collapsed, expanded]
+
+sizes: []
+
+states:
+  - default
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: sidebar
+  elements:
+    - header
+    - toggle
+    - body
+    - footer
+  modifiers:
+    intent: []
+    size: []
+    state: [collapsed, expanded]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <nav class="sidebar sidebar--{state}" aria-label="Navegação principal">
+    <!-- header: logo + toggle button -->
+    <header class="sidebar__header">
+      <!-- {logo} — logotipo do tenant -->
+      {logo}
+      <!-- toggle button (opcional) -->
+      <button
+        class="sidebar__toggle"
+        type="button"
+        aria-label="{Expandir menu | Recolher menu}"
+        aria-expanded="{true | false}"
+      >
+        <!-- chevron left SVG -->
+      </button>
+    </header>
+
+    <!-- body: NavItems (children) -->
+    <div class="sidebar__body">
+      {children}
+    </div>
+
+    <!-- footer: NavItems secundários (opcional) -->
+    <footer class="sidebar__footer">
+      {footer}
+    </footer>
+  </nav>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    background: --semantic-sidebar-bg
+    border-right: --semantic-sidebar-border
+    border-width: 1px
+    padding: --semantic-space-inset-lg
+    gap: --semantic-space-stack-md
+    motion: --semantic-motion-transition
+
+  collapsed:
+    width: --semantic-sidebar-width-collapsed
+    align-items: center
+  expanded:
+    width: --semantic-sidebar-width-expanded
+    align-items: stretch
+
+  toggle-button:
+    background: --semantic-bg-brand
+    color: --semantic-text-on-brand
+    border-radius: --semantic-radius-control
+    hover:
+      background: --semantic-bg-brand-hover
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: stack-md
+  container_padding: inset-lg
+  heading_association_respected: true
+  first_last_reset_required: true
+  composition_gap: stack-xs
+  exceptions: []
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: navigation
+  semantic_element: nav
+  keyboard:
+    - Tab
+    - Enter
+  focus_visible: required
+  required_aria:
+    - "aria-label na nav (rotula a navegação)"
+    - "aria-expanded no toggle button (controla state)"
+    - "aria-label no toggle button (descreve a ação)"
+  wcag_criteria:
+    - "1.4.3"
+    - "1.4.11"
+    - "2.1.1"
+    - "2.4.7"
+  notes:
+    - "Mudar state collapsed↔expanded NÃO deve remover NavItem do tab order."
+    - "Transição de width respeita prefers-reduced-motion."
+
+# ── CONTEÚDO (COPY DE REFERÊNCIA) ────────────────────────────────────────────
+content:
+  sidebar.aria-label: "Navegação principal"
+  sidebar.toggle.expand: "Expandir menu"
+  sidebar.toggle.collapse: "Recolher menu"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    state:
+      type: enum
+      values: [collapsed, expanded]
+      default: expanded
+      required: false
+    onToggle:
+      type: function
+      signature: "() => void"
+      required: false
+    logo:
+      type: ReactNode
+      required: false
+    children:
+      type: ReactNode
+      required: true
+      description: "NavItems da região body."
+    footer:
+      type: ReactNode
+      required: false
+      description: "NavItem(s) da região footer — tipicamente Logout."
+    aria-label:
+      type: string
+      default: "Navegação principal"
+      required: false
+  events:
+    - onToggle
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    nodes:
+      - "43:1008 (Menu — master)"
+      - "232:5742 (Tenant Laranja — variante com toggle em brand color)"
+  audit: squads/magic-ds/audit/04-figma-complete-audit.md
+  foundations: squads/magic-ds/foundations/02-token-architecture.md
+  governance: squads/magic-ds/governance/03-governance-validation.md
+  output:
+    canonical_css: squads/magic-ds/output/css/sidebar.css
+    canonical_html: squads/magic-ds/output/html/sidebar.html
+    adapter_react: src/components/organisms/Sidebar/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-13
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+  template_version: 2.0.0
+  composes: [NavItem, IconButton]
+  migration_notes:
+    - "2026-05-14: migrado pro template v2 dual-output. Adicionado bem:, html_structure:, products:, outputs: canonical+adapter. CVA substituído por mapa BEM estático no adapter React."
+
+
+# Round 3.1 type roles consumidos:
+tokens_type: []  # componente sem texto principal
+
+# Next required step: mds-audit *design-check --target Sidebar.spec.yaml.
+# Cannot proceed to mds-ops until score >= B.

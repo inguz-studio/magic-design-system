@@ -1,0 +1,84 @@
+# =============================================================================
+# shelflix-admin.yaml — Theme base da família Shelflix (Round 4)
+# =============================================================================
+# Produto: shelflix-admin — 1° andar da arquitetura "3 andares".
+# Tokens de personalidade do produto declarados como set product-shelflix-admin
+# em src/styles/tokens.json (v3). Brand Core foi incorporado ao Semantic.
+# Migrado de Round 2 (--brand-*) para v3 (--sf-action-primary-*) em 2026-05-19.
+# =============================================================================
+
+product: shelflix-admin
+based_on: null                     # produto raiz da família Shelflix
+display_name: "Shelflix Admin"
+description: "Painel administrativo Shelflix — admin panel multi-tenant dark-first. Tema base da família."
+
+scope:
+  selector: '[data-product="shelflix-admin"]'
+  token_set: product-shelflix-admin  # set declarado em tokens.json $metadata.sets
+
+# ── Token set mínimo (ver governance/theme-contract.md §1) ───────────────────
+# Tokens de ação e navegação do produto. Vivem no set product-shelflix-admin
+# em tokens.json. Gerados em tokens-generated.css pelo build-tokens.mjs.
+required:
+  action-primary-bg:              var(--sf-action-primary-bg)
+  action-primary-bg-hover:        var(--sf-action-primary-bg-hover)
+  action-primary-bg-pressed:      var(--sf-action-primary-bg-pressed)
+  action-primary-bg-subtle:       var(--sf-action-primary-bg-subtle)
+  action-primary-text:            var(--sf-action-primary-text)
+  accent:                         var(--sf-accent)
+  accent-subtle:                  var(--sf-accent-subtle)
+  nav-active-bg:                  var(--sf-nav-active-bg)
+  nav-active-text:                var(--sf-nav-active-text)
+
+# ── Opcionais com fallback ───────────────────────────────────────────────────
+optional:
+  link:               var(--sf-action-primary-bg)
+  focus:              var(--sf-action-primary-bg)
+  selection-bg:       var(--sf-action-primary-bg-subtle)
+  selection-text:     var(--sf-text-primary)
+  chart-emphasis:     var(--sf-action-primary-bg)
+  illustration-accent: var(--sf-accent)
+
+# ── Modes suportados ─────────────────────────────────────────────────────────
+modes:
+  dark: true                       # default (admin é dark-first nativo)
+  light: true                      # suportado, override em [data-theme="light"]
+  high_contrast: false             # ainda não implementado
+
+# ── Domain components adotados (opt-in cross-tenant) ─────────────────────────
+# Shelflix Admin usa estes 6 domain components (KPI variants de monitoramento).
+# Outros produtos da família podem adotar ou não, conforme necessidade.
+adopts_domain:
+  - StatKpiCard
+  - DonutKpiCard
+  - ListKpiCard
+  - StackedBarKpiCard
+  - RangeBarsKpiCard
+  - RankedListKpiCard
+
+# ── Background da aplicação ──────────────────────────────────────────────────
+background:
+  kind: solid                      # solid | gradient | animated | image | pattern
+  options: {}                      # solid não precisa options (consome --semantic-bg-canvas)
+
+# ── White-label clients ──────────────────────────────────────────────────────
+allows_clients: false              # admin não é white-labelable por enquanto
+
+# ── Brand assets ─────────────────────────────────────────────────────────────
+brand:
+  logo: "src/showroom/assets/logo.svg"
+  favicon: null
+  font_family: "Sora"
+
+# ── Componentes bloqueados pra este produto ──────────────────────────────────
+blocked_components: []             # admin usa todos
+
+# ── Metadados ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-ops
+  created: 2026-05-14
+  last_modified: 2026-05-19
+  round: 4
+  notes: "Migrado de Round 2 (--brand-*) para v3 (--sf-action-primary-*, token sets). Brand Core eliminado, Theme como camada eliminado. Ver foundations/07-token-architecture-v3.md."
+  consumers:
+    - "Shelflix Admin (este repositório)"

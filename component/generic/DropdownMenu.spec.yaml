@@ -1,0 +1,115 @@
+component: DropdownMenu
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: navigation
+atomic_level: molecule
+
+description: |
+  Menu disparado por button. Items navegáveis por teclado (setas, Home/End,
+  Enter, Escape, type-ahead). Pattern menu-aria. Reusa Popover como overlay.
+
+# Vendor (Round 3.3 — policy-aware, migrado de native V1)
+vendor:
+  primitive: dropdown-menu
+  install_path: src/vendor/dropdown-menu.tsx
+  import_alias: "@/vendor/dropdown-menu"
+  fallback_native_v1: src/components/molecules/DropdownMenu/_archive/DropdownMenu.native.v1.tsx
+
+
+variants:
+  align: [start, end]
+
+sizes: []
+states: [closed, open]
+
+bem:
+  block: dropdown-menu
+  elements: [trigger, list, item, separator, label]
+  modifiers:
+    align: [start, end]
+    disabled: [disabled]
+    danger: [danger]
+    open: [open]
+
+html_structure: |
+  <button class="dropdown-menu__trigger" type="button"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-controls="menu-{id}">{trigger}</button>
+  <ul class="dropdown-menu dropdown-menu--open"
+      id="menu-{id}" role="menu">
+    <li role="presentation"><div class="dropdown-menu__label">Seção</div></li>
+    <li role="presentation">
+      <button class="dropdown-menu__item" role="menuitem" tabindex="-1">Item</button>
+    </li>
+    <li role="separator" class="dropdown-menu__separator"></li>
+    <li role="presentation">
+      <button class="dropdown-menu__item dropdown-menu__item--danger" role="menuitem" tabindex="-1">Excluir</button>
+    </li>
+  </ul>
+
+a11y_native:
+  pattern: menu-aria
+  required:
+    - "Trigger com aria-haspopup='menu' + aria-expanded + aria-controls"
+    - "List com role='menu'"
+    - "Items com role='menuitem'"
+    - "Roving tabindex: só item ativo tem tabindex=0; demais tabindex=-1"
+    - "Setas Up/Down movem foco (com loop)"
+    - "Home/End primeiro/último item"
+    - "Enter/Space ativa o item"
+    - "Escape fecha e retorna foco ao trigger"
+    - "Typing inicia type-ahead match no início do label do item"
+    - "Item disabled pula no roving"
+
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: stack-sm
+  container_padding: inset-sm
+  heading_association_respected: false
+  first_last_reset_required: true
+  composition_gap: null
+  exceptions: []
+
+tokens:
+  shared:
+    background: --semantic-bg-surface
+    border: --semantic-border-default
+    radius: --semantic-radius-surface
+    shadow: --semantic-shadow-overlay
+    z-index: --semantic-z-dropdown
+    motion-in: --semantic-motion-overlay-in
+    motion-out: --semantic-motion-overlay-out
+
+a11y:
+  role: menu
+  keyboard: [ArrowUp, ArrowDown, Home, End, Enter, Space, Escape, "letras (type-ahead)"]
+  focus_visible: required
+  required_aria:
+    - "trigger.aria-haspopup=menu"
+    - "trigger.aria-expanded"
+    - "list.role=menu"
+    - "items.role=menuitem"
+  wcag_criteria: ["1.4.3", "2.1.1", "2.1.2", "2.4.7"]
+
+api:
+  props:
+    trigger:  { type: ReactNode, required: true }
+    items:    { type: "DropdownMenuItem[]", required: true }
+    align:    { type: enum, values: [start, end], default: start }
+    isOpen:   { type: boolean, required: false }
+    onOpenChange: { type: function }
+  events: [onOpenChange, onSelect]
+
+outputs: [tsx, types, contract, stories]
+
+composes: []
+
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-15
+  round: 3
+  wave: overlay-lot-2

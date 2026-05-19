@@ -1,0 +1,280 @@
+# =============================================================================
+# IconButton.spec.yaml — Botão icon-only
+# =============================================================================
+# Migrado pro template v2 (dual output: canonical CSS+HTML + adapter React+TW).
+# =============================================================================
+
+component: IconButton
+version: 0.2.0
+kind: generic
+status: draft
+category: control
+atomic_level: atom
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: button
+  install_path: /src/vendor/button.tsx
+  import_alias: "@/vendor/button"
+
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+variants:
+  intent: [primary, secondary, ghost, danger, help]
+
+sizes: [sm, md, lg]
+
+states:
+  - default
+  - hover
+  - focus-visible
+  - active
+  - disabled
+  - loading
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: icon-btn
+  elements:
+    - spinner
+  modifiers:
+    intent: [primary, secondary, ghost, danger, help]
+    size: [sm, md, lg]
+    state: [disabled, loading]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <button
+    class="icon-btn icon-btn--{intent} icon-btn--{size}"
+    type="button"
+    aria-label="{label}"
+  >
+    <!-- {icon} — SVG ou Lucide React passado como children -->
+    {icon}
+  </button>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    border-radius: --semantic-radius-control
+    motion: --semantic-motion-interaction
+    aspect-ratio: "1 / 1"
+
+  sm:
+    width: --semantic-size-control-sm
+    height: --semantic-size-control-sm
+    icon-size: --semantic-size-icon-sm
+  md:
+    width: --semantic-size-control-md
+    height: --semantic-size-control-md
+    icon-size: --semantic-size-icon-md
+  lg:
+    width: --semantic-size-control-lg
+    height: --semantic-size-control-lg
+    icon-size: 1.5rem
+
+  primary:
+    default:
+      background: --semantic-bg-brand
+      icon-color: --semantic-text-on-brand
+      border: transparent
+    hover:
+      background: --semantic-bg-brand-hover
+    disabled:
+      background: --semantic-bg-muted
+      icon-color: --semantic-text-disabled
+
+  secondary:
+    default:
+      background: transparent
+      icon-color: --semantic-text-brand
+      border: --semantic-border-brand
+    hover:
+      background: --semantic-bg-brand-subtle
+    disabled:
+      icon-color: --semantic-text-disabled
+      border: --semantic-border-subtle
+
+  ghost:
+    default:
+      background: transparent
+      icon-color: --semantic-text-secondary
+      border: transparent
+    hover:
+      background: --semantic-bg-subtle
+      icon-color: --semantic-text-primary
+    disabled:
+      icon-color: --semantic-text-disabled
+
+  danger:
+    default:
+      background: --semantic-bg-danger-solid
+      icon-color: --semantic-text-on-danger
+      border: transparent
+    hover:
+      background: --semantic-bg-danger-solid-hover
+    focus-visible:
+      outline: --semantic-border-error
+    disabled:
+      background: --semantic-bg-muted
+      icon-color: --semantic-text-disabled
+
+  help:
+    border-radius: --semantic-radius-pill
+    default:
+      background: transparent
+      icon-color: --semantic-text-tertiary
+      border: --semantic-border-subtle
+    hover:
+      background: --semantic-bg-subtle
+      icon-color: --semantic-text-primary
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: n/a
+  internal_group_gap: n/a
+  container_padding: 0
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions: []
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: button
+  semantic_element: button
+  keyboard:
+    - Enter
+    - Space
+  focus_visible: required
+  required_aria:
+    - aria-label
+    - aria-busy
+    - aria-disabled
+    - aria-describedby
+  wcag_criteria:
+    - "1.4.11"
+    - "2.1.1"
+    - "2.4.7"
+    - "2.5.5"
+  notes:
+    - "aria-label é OBRIGATÓRIO — sem texto visível, screen readers precisam dele."
+    - "Variant 'help' deve abrir Tooltip ao hover/focus com aria-describedby apontando para o tooltip."
+
+# ── CONTEÚDO (COPY DE REFERÊNCIA) ────────────────────────────────────────────
+content:
+  iconbutton.aria-label.help: "Ajuda"
+  iconbutton.aria-label.view: "Visualizar"
+  iconbutton.aria-label.edit: "Editar"
+  iconbutton.aria-label.delete: "Excluir"
+  iconbutton.aria-label.close: "Fechar"
+  iconbutton.aria-label.filter: "Filtrar"
+  iconbutton.aria-label.menu: "Abrir menu"
+  iconbutton.aria-label.toggle-sidebar: "Alternar menu lateral"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    variant:
+      type: enum
+      values: [primary, secondary, ghost, danger, help]
+      default: ghost
+      required: false
+      description: "Ghost é o default — maioria dos uses são inline em tabelas/cards."
+    size:
+      type: enum
+      values: [sm, md, lg]
+      default: md
+      required: false
+    children:
+      type: ReactNode
+      required: true
+      description: "Ícone único."
+    aria-label:
+      type: string
+      required: true
+      description: "OBRIGATÓRIO. Descreve a ação para screen readers."
+    isDisabled:
+      type: boolean
+      default: false
+      required: false
+    isLoading:
+      type: boolean
+      default: false
+      required: false
+    disabled:
+      type: boolean
+      default: false
+      required: false
+    onClick:
+      type: function
+      signature: "(event: React.MouseEvent<HTMLButtonElement>) => void"
+      required: false
+  events:
+    - onClick
+    - onFocus
+    - onBlur
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+# Resolvidos em foundations/06-foundations-round-1-6.md (histórico):
+#   --semantic-bg-danger-solid       → var(--primitive-error)
+#   --semantic-bg-danger-solid-hover → var(--primitive-error-dark)
+#   --semantic-text-on-danger        → #FFFFFF
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    nodes:
+      - "528:6503 (Small Button — 40×40, 3 variants)"
+      - "130:1589 (Botão de Tabela — 32×32, 2 variants)"
+      - "96:6234 (Botões de ação - Question — 42×42, help variant)"
+  audit: squads/magic-ds/audit/04-figma-complete-audit.md
+  foundations: squads/magic-ds/foundations/02-token-architecture.md
+  governance: squads/magic-ds/governance/03-governance-validation.md
+  output:
+    canonical_css: squads/magic-ds/output/css/icon-btn.css
+    canonical_html: squads/magic-ds/output/html/icon-btn.html
+    adapter_react: src/components/atoms/IconButton/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-13
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+  template_version: 2.0.0
+  consolidates_figma_components: ["Small Button", "Botão de Tabela", "Botões de ação - Question"]
+  migration_notes:
+    - "2026-05-14: migrado pro template v2 dual-output. Adicionado bem:, html_structure:, products:, outputs: canonical+adapter. CVA substituído por mapa BEM estático no adapter React."
+
+
+# Round 3.1 type roles consumidos:
+tokens_type: []  # componente sem texto principal
+
+# Next required step: mds-audit *design-check --target IconButton.spec.yaml.
+# Cannot proceed to mds-ops until score >= B.

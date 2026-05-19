@@ -1,0 +1,91 @@
+component: ContextMenu
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: navigation
+atomic_level: molecule
+
+description: |
+  Menu disparado por right-click (event `contextmenu`) em uma área alvo.
+  Bloqueia menu nativo do browser. Posiciona em event.clientX/Y. Pattern
+  menu-aria — comportamento idêntico ao DropdownMenu (roving tabindex,
+  setas, type-ahead, escape, return focus).
+
+# Vendor (Round 3.3 — policy-aware, migrado de native V1)
+vendor:
+  primitive: context-menu
+  install_path: src/vendor/context-menu.tsx
+  import_alias: "@/vendor/context-menu"
+  fallback_native_v1: src/components/molecules/ContextMenu/_archive/ContextMenu.native.v1.tsx
+
+
+variants: {}
+sizes: []
+states: [closed, open]
+
+bem:
+  block: context-menu
+  elements: [list, item, separator, label]
+  modifiers:
+    open: [open]
+    danger: [danger]
+    disabled: [disabled]
+
+html_structure: |
+  <ul class="context-menu context-menu--open" role="menu">
+    <li role="presentation">
+      <button class="context-menu__item" role="menuitem" tabindex="0">Editar</button>
+    </li>
+    <li role="separator" class="context-menu__separator"></li>
+    <li role="presentation">
+      <button class="context-menu__item context-menu__item--danger" role="menuitem" tabindex="-1">Excluir</button>
+    </li>
+  </ul>
+
+a11y_native:
+  pattern: menu-aria
+  required:
+    - "Listener `contextmenu` em wrapper alvo; e.preventDefault() bloqueia menu nativo"
+    - "Menu posicionado em (event.clientX, event.clientY) com clamp pro viewport"
+    - "role='menu' + role='menuitem' + roving tabindex (igual DropdownMenu)"
+    - "Setas Up/Down, Home/End, Enter/Space, Escape, type-ahead"
+    - "Click fora fecha; escape retorna foco pro elemento alvo"
+    - "z-index: var(--semantic-z-dropdown)"
+
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: stack-sm
+  container_padding: inset-sm
+  heading_association_respected: false
+  first_last_reset_required: true
+  composition_gap: null
+  exceptions: []
+
+tokens:
+  shared:
+    background: --semantic-bg-surface
+    border: --semantic-border-default
+    radius: --semantic-radius-surface
+    shadow: --semantic-shadow-overlay
+    z-index: --semantic-z-dropdown
+
+a11y:
+  role: menu
+  keyboard: [ArrowUp, ArrowDown, Home, End, Enter, Space, Escape, "letras"]
+  required_aria: ["menu.role=menu", "items.role=menuitem"]
+  wcag_criteria: ["1.4.3", "2.1.1", "2.1.2"]
+
+api:
+  props:
+    children: { type: ReactNode, required: true, note: "área alvo do right-click" }
+    items:    { type: "ContextMenuItem[]", required: true }
+
+outputs: [tsx, types, contract, stories]
+
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-15
+  round: 3
+  wave: overlay-lot-2

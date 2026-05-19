@@ -1,0 +1,278 @@
+# =============================================================================
+# Tag.spec.yaml — Tag de status (consolida 16 variants de TAGS DE STATUS)
+# =============================================================================
+# Migrado pro template v2 (dual output: canonical CSS+HTML + adapter React+TW).
+# =============================================================================
+
+component: Tag
+version: 0.2.0
+kind: generic
+status: draft
+category: display
+atomic_level: atom
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: badge
+  install_path: /src/vendor/badge.tsx
+  import_alias: "@/vendor/badge"
+
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+# Dois vocabulários de status convivem (ver governance/matrix.md §1):
+#   - operational: success/warning/danger/info — vocabulário global universal
+#   - domain:      online/offline/alert + 14 — vocabulário Shelflix (tenant)
+variants:
+  variant: [tint, solid]
+  status_operational:
+    - success
+    - warning
+    - danger
+    - info
+  status:
+    - online
+    - offline
+    - pre-offline
+    - manutencao
+    - pareado
+    - nao-pareado
+    - alta-osc
+    - med-osc
+    - erro-exec
+    - stand
+    - sem-energia
+    - sem-internet
+    - expirado
+    - bloqueado
+    - aguardando-ativacao
+    - indisponivel
+    - alert
+
+sizes: [sm, md]
+
+states:
+  - default
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+# Token mapping is pattern-based (status drives inline CSS vars at runtime).
+# BEM modifiers cover variant and size axes only.
+bem:
+  block: tag
+  elements:
+    - icon
+  modifiers:
+    intent: [tint, solid]
+    size: [sm, md]
+    state: []
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <!--
+    aria-label sempre presente — garante leitura consistente por screen readers
+    mesmo quando o texto visível é truncado.
+    role + aria-live SOMENTE em status dinâmico (atualiza sem reload).
+  -->
+  <span
+    class="tag tag--{variant} tag--{size}"
+    data-status="{status}"
+    data-variant="{variant}"
+    aria-label="{label}"
+    role="{live ? 'status' : undefined}"
+    aria-live="{live ? 'polite' : undefined}"
+  >
+    <!-- icon slot (opcional) -->
+    <span class="tag__icon" aria-hidden="true">{icon}</span>
+    <!-- label — texto visível do status -->
+    {label}
+  </span>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    border-radius: --semantic-radius-pill
+    font-weight: 600
+    gap: --semantic-space-inline-xs
+    border-width: 1px
+
+  sm:
+    height: 1.5rem
+    padding-inline: --semantic-space-inset-sm
+    icon-size: 0.75rem
+  md:
+    height: 2rem
+    padding-inline: --semantic-space-inset-md
+    icon-size: --semantic-size-icon-sm
+
+  tint:
+    pattern:
+      background: "var(--semantic-status-{tokenKey}-bg)"
+      text: "var(--semantic-status-{tokenKey})"
+      border-color: "var(--semantic-status-{tokenKey})"
+
+  solid:
+    pattern:
+      background: "var(--semantic-status-{tokenKey})"
+      text: "var(--semantic-tag-solid-text-{contrast_class})"
+      border-color: transparent
+    contrast_map:
+      online: light
+      offline: light
+      pre-offline: light
+      manutencao: dark
+      pareado: light
+      nao-pareado: light
+      alta-osc: light
+      med-osc: dark
+      erro-exec: light
+      stand: dark
+      sem-energia: light
+      sem-internet: light
+      expirado: light
+      bloqueado: light
+      aguardando-ativacao: light
+      indisponivel: dark
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: n/a
+  container_padding: inset-sm
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions: []
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: status
+  semantic_element: span
+  keyboard: []
+  focus_visible: not_applicable
+  required_aria:
+    - aria-label
+    - aria-live
+  wcag_criteria:
+    - "1.4.3"
+    - "1.4.11"
+    - "1.4.1"
+  notes:
+    - "Cor isolada NÃO transmite informação — tag deve ter ícone OU texto (não só cor)."
+    - "Se status mudar em tempo real, adicionar aria-live='polite' no container."
+
+# ── CONTEÚDO (COPY DE REFERÊNCIA) ────────────────────────────────────────────
+content:
+  tag.status.online: "Online"
+  tag.status.offline: "Offline"
+  tag.status.pre-offline: "Pré-offline"
+  tag.status.manutencao: "Manutenção"
+  tag.status.pareado: "Pareado"
+  tag.status.nao-pareado: "Não pareado"
+  tag.status.alta-osc: "Alta oscilação"
+  tag.status.med-osc: "Média oscilação"
+  tag.status.erro-exec: "Erro de execução"
+  tag.status.stand: "Standby"
+  tag.status.sem-energia: "Sem energia"
+  tag.status.sem-internet: "Sem internet"
+  tag.status.expirado: "Expirado"
+  tag.status.bloqueado: "Bloqueado"
+  tag.status.aguardando-ativacao: "Aguardando ativação"
+  tag.status.indisponivel: "Indisponível"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    status:
+      type: enum
+      values: [online, offline, pre-offline, manutencao, pareado, nao-pareado, alta-osc, med-osc, erro-exec, stand, sem-energia, sem-internet, expirado, bloqueado, aguardando-ativacao, indisponivel]
+      required: true
+    variant:
+      type: enum
+      values: [tint, solid]
+      default: tint
+      required: false
+    size:
+      type: enum
+      values: [sm, md]
+      default: md
+      required: false
+    label:
+      type: string
+      required: false
+      description: "Sobrescreve label padrão de content.tag.status.{status}."
+    icon:
+      type: ReactNode
+      required: false
+      description: "Ícone opcional à esquerda do label."
+    live:
+      type: boolean
+      default: false
+      required: false
+      description: "Se true, marca o container com aria-live para mudanças dinâmicas."
+    children:
+      type: ReactNode
+      required: false
+      description: "Sobrescreve label completamente quando fornecido."
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+# Resolvidos em foundations/06-foundations-round-1-6.md (histórico):
+#   --semantic-tag-solid-text-light → var(--primitive-gray-100)
+#   --semantic-tag-solid-text-dark  → var(--primitive-gray-800)
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    nodes:
+      - "177:2996 (TAGS DE STATUS — master com 16 variants)"
+  audit: squads/magic-ds/audit/04-figma-complete-audit.md
+  foundations: squads/magic-ds/foundations/02-token-architecture.md
+  governance: squads/magic-ds/governance/03-governance-validation.md
+  output:
+    canonical_css: squads/magic-ds/output/css/tag.css
+    canonical_html: squads/magic-ds/output/html/tag.html
+    adapter_react: src/components/atoms/Tag/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-13
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+  template_version: 2.0.0
+  consolidates_figma_components: ["TAGS DE STATUS (16v)", "Badge > Crítico"]
+  migration_notes:
+    - "2026-05-14: migrado pro template v2 dual-output. Adicionado bem:, html_structure:, products:, outputs: canonical+adapter. CVA substituído por inline style dinâmico no adapter React (token pattern não é exprimível em BEM estático). Adapter mantém inline style pois cores variam por status em runtime."
+
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - micro (sm)
+  - action (md)
+
+# Next required step: mds-audit *design-check --target Tag.spec.yaml.
+# Cannot proceed to mds-ops until score >= B.

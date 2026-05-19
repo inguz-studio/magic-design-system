@@ -1,0 +1,166 @@
+# =============================================================================
+# RangeBarsKpiCard.spec.yaml — KPI barras de faixa por intervalo de sinal
+# =============================================================================
+# Especialização do KpiCardShell pra representação de faixas de qualidade
+# com barras horizontais coloridas:
+#   - lista de rows: label de faixa + barra fill proporcional + meta text
+#   - cores por faixa passadas via CSS var name (runtime)
+# =============================================================================
+
+component: RangeBarsKpiCard
+version: 0.1.0
+kind: domain
+domain:
+  tenant_origin: shelflix
+  business_concept: "KPI multiplas barras de progresso para comparacao de faixas"
+  use_cases:
+    - "Comparacao de intensidade entre janelas temporais"
+status: draft
+category: display
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: null
+# ── CONTRATO DE VARIANTES ────────────────────────────────────────────────────
+variants: {}
+sizes: []
+states: [default]
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: range-bars-kpi
+  elements:
+    - row       # grid row (label + bar + meta)
+    - label     # texto da faixa (ex: "80-100%")
+    - bar       # trilho da barra (background track)
+    - bar-fill  # preenchimento colorido (width inline)
+    - meta      # texto de metadados à direita (ex: "2050 · 45,5%")
+  modifiers: {}
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <article class="kpi-card">
+    <header class="kpi-card__header">
+      <span class="kpi-card__icon" aria-hidden="true"><!-- {icon} --></span>
+      <h4 class="kpi-card__title">{title}</h4>
+    </header>
+    <div class="kpi-card__body">
+      <!-- por row: -->
+      <div class="range-bars-kpi__row">
+        <span class="range-bars-kpi__label">{label}</span>
+        <div class="range-bars-kpi__bar" role="progressbar"
+             aria-valuenow="{fillPercent}" aria-valuemin="0" aria-valuemax="100"
+             aria-label="{label}: {fillPercent}%">
+          <div class="range-bars-kpi__bar-fill"
+               style="width: {fillPercent}%; background: var({color})">
+          </div>
+        </div>
+        <span class="range-bars-kpi__meta">{meta}</span>
+      </div>
+    </div>
+  </article>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    row-gap: --semantic-space-stack-sm       # 8px entre rows
+    bar-height: "10px"
+    bar-bg: --semantic-bg-subtle
+    bar-radius: --semantic-radius-control
+    label-size: --primitive-text-xs
+    label-color: --semantic-text-tertiary
+    label-font: --primitive-font-sans        # monospace para alinhamento visual
+    meta-size: --primitive-text-xs
+    meta-color: --semantic-text-tertiary
+    # bar fill colors: inline via style (runtime)
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: stack-sm
+  container_padding: inset-lg
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions:
+    - "Cores das barras são inline (runtime)"
+
+# ── ACESSIBILIDADE (WCAG 2.1 AA) ─────────────────────────────────────────────
+a11y:
+  role: implicit
+  semantic_element: article
+  keyboard: []
+  focus_visible: not_applicable
+  required_aria:
+    - "range-bars-kpi__bar[role='progressbar'] — por row"
+    - "range-bars-kpi__bar[aria-valuenow][aria-valuemin='0'][aria-valuemax='100']"
+    - "range-bars-kpi__bar[aria-label] — descreve faixa e valor"
+  wcag_criteria:
+    - "1.4.3"
+    - "1.4.11"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    title:
+      type: string
+      required: true
+    icon:
+      type: ReactNode
+      required: false
+    helpText:
+      type: string
+      required: false
+    rows:
+      type: "{ label: string; fillPercent: number; color: string; meta: string }[]"
+      required: true
+      description: "Rows da visualização. color = CSS var name (ex: '--semantic-status-online'). fillPercent = 0-100."
+    className:
+      type: string
+      required: false
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+
+# ── COMPOSITION ──────────────────────────────────────────────────────────────
+composes: [KpiCardShell]
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations:
+  - "--semantic-radius-control: confirmar existência em tokens.css"
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  output:
+    canonical_css: squads/magic-ds/output/css/range-bars-kpi.css
+    canonical_html: squads/magic-ds/output/html/range-bars-kpi.html
+    adapter_react: src/components/organisms/RangeBarsKpiCard/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 3
+  template_version: 2.0.0
+  migration_notes:
+    - "2026-05-14: criado pra Dashboard (Saúde de transmissão). Especialização canônica do KpiCardShell com range bars."
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - micro (__label)
+  - micro (__meta)

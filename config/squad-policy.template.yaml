@@ -1,0 +1,82 @@
+# =============================================================================
+# squad-policy.template.yaml — Template pra projetos NOVOS consumindo o squad
+# =============================================================================
+# Copiar pra `config/squad-policy.yaml` no boot do projeto.
+# Onboarding workflow (`onboarding-policy.yaml`) faz isso automaticamente
+# através de perguntas estruturadas — esse template é o ground truth.
+# =============================================================================
+
+project: <NOME-DO-PROJETO>            # kebab-case, único entre projetos
+policy_version: 1.2
+updated: <YYYY-MM-DD>
+
+# ── Quality Lenses (Q8 do onboarding) ─────────────────────────────────────
+# Lentes de qualidade aplicaveis ao DS deste projeto.
+# Default DS: [visual, ux]. Adicionar quando squad expandir pra outros dominios:
+#   visual      — mds-ui audit (theme, layout, responsive, contraste, motion)
+#   ux          — mds-ux audit (Nielsen, heuristics, anti-patterns, IA)
+#   content     — microcopy, tone of voice (futuro)
+#   performance — Core Web Vitals, bundle (futuro)
+#   brand       — brand consistency (futuro, pra squads de marketing)
+#   a11y        — joint UI+UX (subset destacado pra projetos compliance)
+quality_lenses:                        # subset configuravel por projeto
+  - visual
+  - ux
+
+# ── Token prefix (Q1 do onboarding) ───────────────────────────────────────
+# Prefix obrigatório em TODOS os tokens gerados pelo squad.
+# Derivado das 2 primeiras letras do nome da marca (lowercase, sem acento).
+# Pode ser overridado manualmente se colidir com prefix de lib externa.
+# Reservados (proibidos): tw, bs, mui, ant, chakra, css, var.
+token_prefix: <XX>                     # ex: sf (Shelflix), ac (Acme), bo (Boutique)
+
+# ── Vendor primitives ──────────────────────────────────────────────────────
+vendor:
+  allow_radix: false                   # @radix-ui/* permitido? Default conservador: false
+  allow_shadcn: false                  # shadcn-ui install permitido? Default: false
+  allow_reach: false
+  allow_headlessui: false
+  preferred_a11y_strategy: native      # native | radix | mixed
+  vendor_isolation_path: /src/vendor/  # se permite Radix/shadcn, deve isolar aqui
+  vendor_whitelist: []                 # se mixed: lista de components que PODEM usar vendor
+                                       # ex: [Dialog, Combobox, DatePicker, Toast]
+
+# ── CSS strategy ───────────────────────────────────────────────────────────
+css:
+  allow_cva: false                     # CVA tipicamente banido (manutenção difícil)
+  allow_tailwind_arbitrary: false      # bg-[#hex] proibido (usar tokens)
+  allow_inline_styles_in_adapter: false # style={{}} em React adapter
+  prefer_canonical_classes: true       # className="btn btn--primary" sobre utility
+
+# ── A11y alternatives ──────────────────────────────────────────────────────
+a11y_alternatives:
+  focus_trap: native                   # native | focus-trap-react | react-aria
+  combobox_extra: native
+  datepicker_extra: native
+  toast_extra: native
+
+# ── Build & performance ────────────────────────────────────────────────────
+build:
+  framework: react                     # react | vue | svelte | vanilla
+  styling: tailwind-v4                 # tailwind-v4 | tailwind-v3 | css-modules | vanilla
+  bundler: vite
+  output_canonical: true               # sempre true (canonical é fonte da verdade)
+  output_adapter: true                 # opcional por projeto
+
+# ── Existing implementations ──────────────────────────────────────────────
+existing_native_implementations: []   # vazio pra projetos novos
+
+# ── Validators ────────────────────────────────────────────────────────────
+# Lidos por scripts/validate-output.sh + design-check.sh
+validators:
+  block_radix_imports: true            # se allow_radix: false → true (bloqueia)
+  block_shadcn_install: true           # se allow_shadcn: false → true
+  block_vendor_path: true              # se ambos false → /src/vendor/ não existe
+  enforce_vendor_isolation: false      # só faz sentido se vendor permitido
+  block_cva: true
+  block_hardcoded_tokens: true
+
+# ── Notas de onboarding ────────────────────────────────────────────────────
+# Workflow `onboarding-policy.yaml` invocado por `mds-orchestrator
+# *onboarding-policy` produz esse arquivo via 6 perguntas estruturadas.
+# Manual override: editar diretamente esse arquivo.

@@ -1,0 +1,176 @@
+# =============================================================================
+# KpiCardShell.spec.yaml — Wrapper compartilhado dos KpiCards
+# =============================================================================
+# Migrado pro template v2 (dual output: canonical CSS+HTML + adapter React+TW).
+# =============================================================================
+
+component: KpiCardShell
+version: 0.2.0
+kind: generic
+status: draft
+category: display
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+# KpiCardShell é um wrapper visual sem comportamento Radix complexo.
+# Pode usar `vendor/card` no adapter pra ergonomia React, mas não é required.
+vendor:
+  primitive: card
+  install_path: /src/vendor/card.tsx
+  import_alias: "@/vendor/card"
+
+variants: {}
+sizes: []
+states: [default]
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: kpi-card
+  elements:
+    - header
+    - icon
+    - title
+    - help
+    - body
+    - value       # número/métrica principal (h1-class). Modifiers --success/warning/danger pintam via semantic-status.
+  modifiers:
+    intent: []
+    size: []
+    state: []
+  value_modifiers:
+    intent: [neutral, success, warning, danger, info]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <article class="kpi-card">
+    <header class="kpi-card__header">
+      <!-- icon slot (opcional, decorativo) -->
+      <span class="kpi-card__icon" aria-hidden="true">
+        <!-- ícone inserido pelo consumer (Lucide, SVG, etc.) -->
+      </span>
+      <h4 class="kpi-card__title">{title}</h4>
+      <!-- help slot (opcional) -->
+      <button
+        class="kpi-card__help"
+        type="button"
+        aria-label="{helpText}"
+        title="{helpText}"
+      >
+        <!-- help icon -->
+      </button>
+    </header>
+    <div class="kpi-card__body">
+      {children}
+    </div>
+  </article>
+
+tokens:
+  shared:
+    background: --semantic-bg-surface
+    border: --semantic-border-default
+    radius: --semantic-radius-surface
+    padding: --semantic-space-inset-lg
+    gap-stack: --semantic-space-stack-md
+    gap-inline: --semantic-space-inline-md
+    title-size: --primitive-text-md
+    title-color: --semantic-text-primary
+    icon-color: --semantic-text-tertiary
+
+rhythm:
+  internal_item_gap: stack-md
+  internal_group_gap: n/a
+  container_padding: inset-lg
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions: []
+
+a11y:
+  role: implicit
+  semantic_element: article
+  keyboard: []
+  focus_visible: not_applicable
+  required_aria:
+    - "kpi-card__icon[aria-hidden='true'] (ícone é decorativo)"
+    - "kpi-card__help[aria-label] (botão de ajuda precisa rótulo)"
+  wcag_criteria:
+    - "1.4.3"
+    - "2.4.6"
+
+content:
+  kpicard.help.default: "Mais informações"
+
+api:
+  props:
+    title:
+      type: string
+      required: true
+      description: "Título do card (h4 dentro do header)."
+    icon:
+      type: ReactNode
+      required: false
+      description: "Lucide-react ou SVG — renderiza ao lado do título, 20px, cor herda --semantic-text-tertiary."
+    helpText:
+      type: string
+      required: false
+      description: "Texto opcional do help button — vira tooltip + aria-label."
+    children:
+      type: ReactNode
+      required: true
+      description: "Conteúdo principal (StatKpi value, Donut chart, list, etc)."
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+# KpiCardShell é neutro — consome semantic puro. Todos os produtos herdam
+# automaticamente do tema base sem precisar override.
+theme_overrides:
+  shelflix-admin: []
+
+gaps_for_foundations: []
+
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    node: null
+  audit: squads/magic-ds/audit/04-figma-complete-audit.md
+  foundations: squads/magic-ds/foundations/02-token-architecture.md
+  governance: squads/magic-ds/governance/03-governance-validation.md
+  output:
+    canonical_css: squads/magic-ds/output/css/kpi-card.css
+    canonical_html: squads/magic-ds/output/html/kpi-card.html
+    adapter_react: src/components/organisms/KpiCardShell/
+
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+  template_version: 2.0.0
+  migration_notes:
+    - "2026-05-14: migrado pro template v2 dual-output. Adicionou bloco bem:, html_structure:, products:. Versão 0.1.0 → 0.2.0."
+
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - h3 (__title)
+
+# Next required step: mds-audit *design-check --target KpiCardShell.spec.yaml.
+# Cannot proceed to mds-ops until score ≥ B.

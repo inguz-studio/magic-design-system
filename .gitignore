@@ -1,0 +1,26 @@
+# =============================================================================
+# .gitignore — magic-design-system
+# =============================================================================
+# Arquivos/pastas que NÃO vão pro GitHub mas podem existir local.
+
+# Policy é específica de cada projeto consumer — instalador cria do template
+config/squad-policy.yaml
+
+# Artefatos gerados — não versionar
+output/
+showcase/dist/
+
+# Auditorias e handoffs específicos do projeto Shelflix (origem)
+audit/
+handoffs/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node (caso alguém rode npm install dentro do squad por engano)
+node_modules/

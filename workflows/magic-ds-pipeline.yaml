@@ -1,0 +1,216 @@
+name: "Magic-DS Core Pipeline (Dual-Layer Output)"
+id: magic-ds-pipeline
+version: 2.0.0
+description: "Fluxo completo de roteamento JSON e Human-in-the-loop. Suporta DOIS outputs sincronizados: (1) canonical HTML+CSS BEM (fonte da verdade, zero deps); (2) adapter React+Tailwind opcional pros 4 projetos Shelflix."
+
+triggers:
+  - on_command: "*route"
+  - on_event: "ui_image_received"
+
+steps:
+  - id: step_orchestrate
+    agent: mds-orchestrator
+    action: "Analisar input do usuário e determinar agente + alvo (canonical/adapter/all) via roteamento JSON."
+    output_format: "json"
+    branches:
+      - condition: "agent == 'librarian'"
+        goto: step_librarian
+      - condition: "agent == 'ui'"
+        goto: step_ui_check
+      - condition: "agent == 'ux'"
+        goto: step_ux_check
+      - condition: "agent == 'audit'"
+        goto: step_ux_check     # Round 5 — audit deprecated → redirect pra ux
+      - condition: "agent == 'joint'"
+        goto: step_joint_audit
+      - condition: "agent == 'foundations'"
+        goto: step_foundations
+      - condition: "agent == 'tokens'"
+        goto: step_tokens_validate
+      - condition: "agent == 'governance'"
+        goto: step_governance
+      - condition: "agent == 'component'"
+        goto: step_component
+      - condition: "agent == 'ops'"
+        goto: step_ops_canonical
+      - condition: "agent == 'clarify'"
+        goto: step_clarify_user
+    default:
+      goto: step_clarify_user
+
+  - id: step_clarify_user
+    agent: mds-orchestrator
+    action: "Intenção ambígua ou fora do escopo do DS. Pedir reformulação ao usuário."
+    end: true
+
+  - id: step_librarian
+    agent: mds-librarian
+    task: "lookup-artifact"
+    action: "Indexar estado atual e responder o que existe (canonical + adapter + themes) — usado em modo direto ou como pré-gate."
+    end: true
+
+  # ── UI CHECK (Round 5) — mds-ui validates fidelity + theme + layout ────
+  - id: step_ui_check
+    agent: mds-ui
+    task: "audit-ui"
+    action: "Roda checks UI: theme adaptation (dark/light), layout regression, responsive, density, contraste WCAG, motion, token consumption. Score A/B/C/D independente."
+    branches:
+      - condition: "ui_score == 'C' || ui_score == 'D'"
+        goto: step_clarify_user   # bloqueia ops, retorna pra refinamento
+    next: step_foundations         # se UI:A/B, segue pipeline
+
+  # ── UX CHECK (Round 5, ex-step_audit) — mds-ux validates heuristic + flow ─
+  - id: step_ux_check
+    agent: mds-ux
+    task: "heuristic-audit"
+    action: "Roda audit qualitativo: Nielsen 10 + UX Laws + anti-patterns + microinteractions + IA + microcopy. Score A/B/C/D independente. Tambem cobre grooming visual + extracao de tokens de imagem/URL (heranca do mds-audit)."
+    requires_human_approval: true
+    branches:
+      - condition: "ux_score == 'C' || ux_score == 'D'"
+        goto: step_clarify_user
+    next: step_foundations
+
+  # ── JOINT AUDIT (Round 5) — UI + UX em paralelo, sem merge numerico ───
+  - id: step_joint_audit
+    agent: mds-orchestrator
+    action: "Dispatch parallel pra mds-ui *audit-ui + mds-ux *heuristic-audit. Cada um retorna score independente. Side-by-side, sem merge. Ops bloqueia se UI:C OR UX:C."
+    parallel_dispatch:
+      - "mds-ui *audit-ui"
+      - "mds-ux *heuristic-audit"
+    branches:
+      - condition: "ui_score in ['C','D'] || ux_score in ['C','D']"
+        goto: step_clarify_user
+    next: step_foundations
+
+  - id: step_foundations
+    agent: mds-foundations
+    task: "build-foundations"
+    action: "Estruturar dados brutos em token sets (primitive, semantic-dark, semantic-light, product-<name>, density-<level>). Output: delta a aplicar em src/styles/tokens.json. Consultar Librarian antes de declarar tokens novos."
+    requires_human_approval: true
+    next: step_tokens_validate
+
+  # ── TOKENS — Round 4 (validate + build CSS) ─────────────────────────────
+  - id: step_tokens_validate
+    agent: mds-tokens
+    task: "validate-tokens-json"
+    action: "Validar src/styles/tokens.json contra 15 checks (estrutura, W3C, refs, prefix, coverage). Falha rapido se ref unresolved, prefix mismatch ou coverage gap."
+    branches:
+      - condition: "validation_failed == true"
+        goto: step_clarify_user
+    next: step_tokens_build
+
+  - id: step_tokens_build
+    agent: mds-tokens
+    task: "build-tokens"
+    action: "Rodar scripts/build-tokens.mjs. Gera src/styles/tokens-generated.css a partir de tokens.json. Idempotente."
+    next: step_governance
+
+  - id: step_governance
+    agent: mds-governance
+    task: "enforce-governance"
+    action: "Validar taxonomia e nomenclatura (tokens + BEM classes). Output JSON com status pass/fail."
+    branches:
+      - condition: "needs_component_mapping == true"
+        goto: step_component
+    next: step_ops_canonical
+
+  - id: step_component
+    agent: mds-component
+    task: "map-components"
+    action: "Mapear API, BEM vocab (block/elements/modifiers), html_structure semântico, a11y. Declarar `kind: generic | domain`. Para padrões complexos (Dialog/Tooltip/Combobox/Tabs/Popover/Toast/Menu/DatePicker) declarar bloco `a11y_native:` com receita manual (focus trap, escape, aria-activedescendant, roving tabindex). A11y nativa por padrão; uso de Radix/shadcn permitido apenas se `config/squad-policy.yaml` tiver `allow_radix: true` e o componente estiver na whitelist."
+    branches:
+      - condition: "introduces_new_component_tokens == true"
+        goto: step_governance_components
+    next: step_design_check
+
+  - id: step_governance_components
+    agent: mds-governance
+    task: "enforce-governance"
+    action: "Re-validar naming de tokens específicos de componente + BEM convention antes de Ops gerar código."
+    next: step_design_check
+
+  - id: step_design_check
+    agent: mds-ux
+    task: "*design-check"
+    action: "GATE OBRIGATÓRIO: validar spec.yaml contra 14 princípios de design (Figma + Kittl + Lagerwall). Score mínimo B (≥11/14 ✅, 0 ❌ sem justificativa). Bloqueia Ops em C/D."
+    requires_human_approval: true
+    branches:
+      - condition: "score == 'D' || (blocking_failures != null && blocking_failures.length > 0)"
+        goto: step_clarify_user
+      - condition: "score == 'C'"
+        goto: step_component
+    next: step_ops_canonical
+
+  # ── OPS — FASE 1: CANONICAL (sempre executado) ───────────────────────────
+  - id: step_ops_canonical
+    agent: mds-ops
+    task: "generate-ops-code"
+    action: "Gerar OUTPUT CANÔNICO: squads/magic-ds/output/html/<block>.html + squads/magic-ds/output/css/<block>.css. Estrutura BEM consumindo tokens --semantic-*/--theme-* e --primitive-* (spacing/radius/motion). Component tokens (--<block>-*) declarados no topo do bloco BEM. Output canônico é HTML+CSS puro por definição: zero dependências externas (sem Radix, sem shadcn, sem React, sem Tailwind utility), zero cor hardcoded."
+    next: step_validate_canonical
+
+  - id: step_validate_canonical
+    agent: mds-ops
+    task: "generate-ops-code"
+    action: "Gate canonical: executar greps anti-framework no output canônico (sem @apply, sem className, sem #hex direto fora de Primitive, sem import de vendor/shadcn, sem @radix-ui). Aborta em qualquer hit."
+    branches:
+      - condition: "canonical_leaks_found == true"
+        goto: step_clarify_user
+    next: step_design_check_mechanical
+
+  - id: step_design_check_mechanical
+    agent: mds-ops
+    task: "generate-ops-code"
+    action: "Gate mecânico de design (Round 3.1): rodar `scripts/design-check.sh` validando consumo correto de tokens type (--semantic-type-*), tokens space (--semantic-space-*), zero font-size/font-weight ad hoc, zero hardcode px/rem em components. Camada 2 de 3 (entre validate-output mecânico e mds-ux *design-check semântico). PASS com warnings OK, FAIL aborta."
+    branches:
+      - condition: "design_check_mechanical_failed == true"
+        goto: step_clarify_user
+    next: step_check_adapter_target
+
+  # ── OPS — FASE 2: ADAPTER (opcional, só se target inclui adapter) ────────
+  - id: step_check_adapter_target
+    agent: mds-orchestrator
+    action: "Verificar payload.target. Se 'canonical' → fim. Se 'adapter' ou 'all' → seguir pra step_ops_adapter."
+    branches:
+      - condition: "target == 'canonical'"
+        goto: step_emit_canonical_only
+    next: step_ops_adapter
+
+  - id: step_emit_canonical_only
+    agent: mds-ops
+    action: "Entregar pacote canonical-only e finalizar."
+    end: true
+
+  - id: step_ops_adapter
+    agent: mds-ops
+    task: "generate-ops-code"
+    action: "Gerar ADAPTER React+Tailwind em /src/components/<level>/<Name>/. Wrapper consome classes BEM canônicas via className. A11y nativa implementada diretamente no wrapper conforme `spec.a11y_native:`. Validar isolamento de vendor conforme `config/squad-policy.yaml`: se `allow_radix: false`, bloqueio total de @radix-ui e shadcn; se `allow_radix: true`, vendor isolado em /src/vendor/, wrapper em /src/components/<Nome>/ importa apenas de @/vendor/."
+    next: step_validate_adapter
+
+  - id: step_validate_adapter
+    agent: mds-ops
+    task: "generate-ops-code"
+    action: "Gate adapter: executar greps de não-vazamento — ZERO `@radix-ui/*` em deps + imports; ZERO `from .*vendor`; ZERO `bg-[#...]`/`text-[#...]` hardcode em utility; classes BEM canônicas presentes nos wrappers; ZERO vestígio CVA residual (`class-variance-authority|VariantProps|\\w+Variants`)."
+    branches:
+      - condition: "adapter_leaks_found == true"
+        goto: step_clarify_user
+    next: step_check_package_target
+
+  # ── OPS — FASE 3: PACKAGE (opcional, só se solicitado explicitamente) ────
+  - id: step_check_package_target
+    agent: mds-orchestrator
+    action: "Verificar payload.package. Se ausente/false → fim. Se true → seguir pra step_package."
+    branches:
+      - condition: "package != true"
+        goto: step_emit_full
+    next: step_package
+
+  - id: step_emit_full
+    agent: mds-ops
+    action: "Entregar pacote canonical + adapter e finalizar."
+    end: true
+
+  - id: step_package
+    agent: mds-ops
+    task: "generate-ops-code"
+    action: "Empacotar outputs como NPM: @shelflix/design-tokens, @shelflix/design-css, @shelflix/react, @shelflix/tailwind-preset (opcional). Versionamento semver baseado em diff vs último snapshot."
+    end: true

@@ -1,0 +1,269 @@
+# =============================================================================
+# component.spec.yaml — Contrato canônico de componente do Magic-DS (Round 4)
+# =============================================================================
+# Output formal do agente `mds-component`. Consumido por:
+#   - mds-ops          → gera DOIS outputs sincronizados:
+#                          1. canonical  (HTML + CSS BEM, zero deps)
+#                          2. adapter    (React+Tailwind, opcional)
+#   - mds-governance   → valida nomes/regras + Theme Contract + Matrix
+#   - mds-code-auditor → checa se código em produção segue este contrato
+#   - mds-chronicler   → diffa N vs N-1 → CHANGELOG + migration guide
+#   - mds-librarian    → indexa todos os spec.yaml + outputs gerados
+#
+# Princípios:
+#   1. CANONICAL é a fonte da verdade — HTML semântico + CSS BEM consumindo
+#      tokens das 3 camadas (Primitive → Semantic → Component). Zero dep de framework.
+#   2. ADAPTER é derivação opcional pro consumer React+Tailwind.
+#      A11y policy-driven: ler config/squad-policy.yaml. Se allow_radix=true e
+#      componente está na vendor_whitelist, pode usar shadcn. Senão, nativo via `a11y_native:`.
+#   3. Componentes consomem APENAS tokens Semantic (`--sf-*`) ou Primitive
+#      (spacing/radius/motion via Semantic). Nunca cor hardcoded, nunca `--sf-primitive-*`
+#      de cor direto em componente.
+#   4. Spec declara `kind: generic | domain` obrigatoriamente.
+# =============================================================================
+
+# ── IDENTIDADE ───────────────────────────────────────────────────────────────
+component: <PascalCase>            # ex: Button, KpiCardShell, Dialog
+kind: generic                      # OBRIGATÓRIO. generic | domain
+                                   # generic = reusável universal (Button, Card, Tag)
+                                   # domain  = específico de tenant (KpiCard variants Shelflix)
+version: 0.1.0                     # semver — Chronicler gerencia
+status: draft                      # draft | stable | deprecated
+category: control                  # control | display | feedback | layout | navigation
+atomic_level: atom                 # atom | molecule | organism | template
+
+# Produtos consumidores. Lista cada produto que vai exibir esse componente.
+# Domain components: tipicamente só nos produtos que adotam via `adopts_domain`.
+products: [shelflix-admin]         # ex: [shelflix-admin, shelflix-X, shelflix-Y]
+
+# Tenants (multi-tenancy DENTRO de cada produto, eixo ortogonal a products).
+tenants: [shelflix]
+
+# ── BLOCO DOMAIN (obrigatório SE kind == domain) ─────────────────────────────
+# Comenta esse bloco quando kind=generic. Descomenta + preenche quando kind=domain.
+# domain:
+#   tenant_origin: shelflix          # quem criou
+#   business_concept: "..."          # conceito de negócio resolvido
+#   use_cases:
+#     - "..."
+#     - "..."
+
+# ── BLOCO VENDOR (opcional, Round 3.3 — policy-driven) ───────────────────────
+# Round 3.3 restaurado. Squad lê config/squad-policy.yaml e modula validação:
+#   - Se policy.vendor.allow_radix=false → vendor.primitive DEVE ser null
+#   - Se policy.vendor.allow_radix=true E component está em vendor_whitelist →
+#     vendor.primitive pode declarar shadcn primitive (ex: dialog, popover, select)
+#   - Sempre declarar a11y_native: como fallback documentado (migração futura)
+vendor:
+  primitive: null                    # null | <shadcn-primitive-name> (dialog/popover/etc.)
+  required_for_a11y: false           # true só se policy permite E component é complexo
+  # install_path: /src/vendor/<name>.tsx     # se primitive != null
+  # import_alias: "@/vendor/<name>"           # wrapper importa dessa rota
+
+# ── CONTRATO DE VARIANTES ────────────────────────────────────────────────────
+variants:
+  intent: []                       # ex: [primary, secondary, ghost, danger]
+  # outros eixos opcionais (selection, density, etc.)
+
+sizes: []                          # ex: [sm, md, lg]
+
+states:                            # estados interativos suportados
+  - default
+  - hover
+  - focus-visible
+  - active
+  - disabled
+  - loading
+
+# ── BEM CLASSES (CANONICAL CSS) ──────────────────────────────────────────────
+# OBRIGATÓRIO. Declara o vocabulário CSS canônico. mds-ops gera o CSS BEM
+# a partir desse bloco. mds-governance valida que segue convenção.
+#
+# Regras:
+#   - `block` em kebab-case (ex: kpi-card, btn, tag).
+#   - `elements` são sufixos `__` (ex: header → .kpi-card__header).
+#   - `modifiers` são sufixos `--` (ex: primary → .btn--primary).
+#   - Máximo 2 níveis (.block__element OK; .block__element__sub NÃO).
+bem:
+  block: <kebab-case>              # ex: kpi-card
+  elements: []                     # ex: [header, icon, title, body, footer]
+  modifiers:                       # mapeia 1:1 com variants + sizes + states
+    intent: []                     # ex: [primary, secondary, ghost, danger]
+    size: []                       # ex: [sm, md, lg]
+    state: []                      # ex: [disabled, loading]
+
+# ── ESTRUTURA HTML CANÔNICA ──────────────────────────────────────────────────
+# OBRIGATÓRIO. HTML semântico que mds-ops vai gerar em
+# squads/magic-ds/output/html/<block>.html.
+html_structure: |
+  <div class="<block>">
+    <!-- elements aqui -->
+  </div>
+
+# ── A11Y NATIVA (obrigatório pra padrões complexos) ──────────────────────────
+# Componentes simples (Button, Tag, Card) NÃO precisam — A11y é trivial via HTML.
+# Componentes complexos (Dialog, Tooltip, Combobox, Select, Popover, Tabs, Toast,
+# Menu, DatePicker) DEVEM declarar receita manual aqui — sem Radix/shadcn.
+#
+# Padrões aceitos (ver mds-component.md §A11y nativa):
+#   dialog-modal | tooltip | combobox-aria-1.2 | tabs-aria | popover-nonmodal |
+#   toast-live-region | menu-aria | datepicker-grid | (custom)
+#
+# a11y_native:
+#   pattern: "dialog-modal"
+#   required:
+#     - "role='dialog' + aria-modal='true'"
+#     - "Focus trap manual via JS"
+#     - "Escape fecha; return focus ao trigger"
+#     - "Body scroll lock"
+#     - "Initial focus em primeiro focusável OU [data-initial-focus]"
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+# Mapa (variante × estado) → tokens das 3 camadas. Fonte única que mds-ops
+# consome pra gerar CSS canônico.
+#
+# Regras:
+#   - Componente consome SÓ tokens Semantic (--sf-*) ou Primitive de espaço/radius/motion
+#   - NUNCA --sf-primitive-*-color direto em componente (sempre via Semantic)
+#   - Component tokens (--<block>-*) declarados no topo do CSS canônico
+tokens:
+  # Tokens compartilhados por todas as variantes
+  shared:
+    radius: --semantic-radius-<role>
+    typography: --semantic-type-<role>
+    motion: --semantic-motion-interaction
+    padding-inline: --semantic-space-inset-<size>
+    gap: --semantic-space-inline-<size>
+
+  # Por variante (ex: primary, secondary, ...)
+  # <variant>:
+  #   <state>:
+  #     background: --semantic-bg-...
+  #     text: --semantic-text-...
+  #     border: --semantic-border-...
+
+# ── ROUND 3+ : DIMENSÕES FOUNDATION CONSUMIDAS (drift detection) ─────────────
+# Trace explícito por dimensão pro mds-librarian fazer drift detection completo.
+# Liste só o que o componente realmente consome.
+
+# Type roles consumidos (9 roles formais)
+tokens_type: []                     # ex: [action, label, h3]
+
+# Shadow / Elevation consumidos
+tokens_shadow: []                   # ex: [focus-ring, raised, overlay, modal]
+
+# Motion compostos consumidos
+tokens_motion: []                   # ex: [interaction, transition, overlay-in]
+
+# Z-index categorias consumidas
+tokens_z: []                        # ex: [dropdown, modal, tooltip]
+
+# Container/grid roles consumidos
+tokens_container: []                # ex: [page, narrow]
+
+# Iconography roles consumidos
+tokens_icon: []                     # ex: [control, navigation, stroke-regular]
+
+# ── RITMO VERTICAL (cadência interna do componente) ─────────────────────────
+# OBRIGATÓRIO. Sem rhythm = spec inválida (mds-component devolve).
+rhythm:
+  internal_item_gap: stack-sm      # stack-xs (4) | stack-sm (8) | stack-md (16)
+  internal_group_gap: stack-md     # stack-md (16) | stack-lg (24) | stack-xl (32)
+  container_padding: inset-lg      # inset-sm (8) | inset-md (12) | inset-lg (16) | inset-xl (24)
+  heading_association_respected: true
+  first_last_reset_required: true
+  composition_gap: null            # gap entre componentes-filho se organism (ex: stack-xs)
+  exceptions: []
+
+# ── ACESSIBILIDADE (WCAG 2.1 AA — baseline) ─────────────────────────────────
+# A11y básica. Padrões complexos detalham em `a11y_native:` acima.
+a11y:
+  role: <implicit ou ARIA>
+  semantic_element: <tag>
+  keyboard:
+    - Enter
+    - Space
+  focus_visible: required
+  required_aria: []
+  wcag_criteria:
+    - "1.4.3"                      # Contraste mínimo
+    - "1.4.11"                     # Contraste de UI
+    - "2.1.1"                      # Teclado
+    - "2.4.7"                      # Foco visível
+    - "2.5.5"                      # Tamanho do alvo (24×24 mín)
+
+# ── CONTEÚDO (COPY DE REFERÊNCIA) ────────────────────────────────────────────
+# Apenas strings padrão pra evitar inconsistência entre PRs.
+content:
+  # <chave.semantica>: "<texto pt-BR>"
+
+# ── API PÚBLICA (interface do adapter React) ─────────────────────────────────
+api:
+  props:
+    # <propName>:
+    #   type: enum | boolean | string | number | ReactNode | function
+    #   values: [...]
+    #   default: <valor>
+    #   required: true | false
+    #   description: "<curta>"
+  events: []
+
+# ── OUTPUTS ESPERADOS ────────────────────────────────────────────────────────
+# CANONICAL é OBRIGATÓRIO. ADAPTER é opcional.
+outputs:
+  canonical:                       # ✅ SEMPRE — fonte da verdade do DS
+    - html                         # squads/magic-ds/output/html/<block>.html
+    - css                          # squads/magic-ds/output/css/<block>.css
+
+  tailwind:
+    # Tokens auto-cobertos pelo preset global em src/styles/tailwind-theme.css
+    auto: true
+
+  adapter_react:                   # opcional — pra projetos React+TW
+    enabled: true
+    artifacts:
+      - tsx                        # src/components/<level>/<Name>/<Name>.tsx
+      - types                      # <Name>.types.ts
+      - contract                   # <Name>.contract.yaml (espelho da spec)
+
+  documentation:
+    - mdx                          # doc do portal
+    - stories                      # <Name>.stories.tsx
+
+# ── THEME OVERRIDES (multi-product / multi-client) ──────────────────────────
+# Declara quais tokens este componente assume variarem entre produtos/clients.
+# Vazio = componente neutro (consome semantic direto, herda o tema).
+theme_overrides:
+  shelflix-admin: []               # base
+  # Exemplo:
+  # shelflix-analytics: [--theme-primary, --theme-accent]
+  # client-acmecorp: [--theme-primary]
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+# Tokens que este componente PRECISA mas ainda não existem.
+gaps_for_foundations: []
+# Exemplo:
+# - token: --semantic-score-fair-bg
+#   why: "DonutKpi precisa fundo de score 'fair' que ainda não existe."
+#   proposed: "var(--primitive-yellow-500) com opacity 0.16"
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    node: <node-id>
+    url: <opcional>
+  audit: squads/magic-ds/audit/<arquivo>.md
+  foundations: squads/magic-ds/foundations/07-token-architecture-v3.md
+  governance: squads/magic-ds/governance/matrix.md
+  component_kinds: squads/magic-ds/governance/component-kinds.md
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: <YYYY-MM-DD>
+  last_modified: <YYYY-MM-DD>
+  round: 4
+
+# Next required step: mds-audit *design-check --target <Componente>.spec.yaml.
+# Cannot proceed to mds-ops until score ≥ B.

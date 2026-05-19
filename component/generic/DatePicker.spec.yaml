@@ -1,0 +1,126 @@
+component: DatePicker
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: control
+atomic_level: molecule
+
+description: |
+  Input de data com calendar popover. Pattern datepicker-grid. Setas movem
+  dia atual; PgUp/PgDn trocam mês; Shift+PgUp/Dn trocam ano; Home/End
+  início/fim da semana. Enter seleciona. Escape fecha sem alterar.
+
+# Vendor (Round 3.3 — policy-aware, migrado de native V1)
+vendor:
+  primitive: day-picker
+  install_path: src/vendor/day-picker.tsx
+  import_alias: "@/vendor/day-picker"
+  fallback_native_v1: src/components/molecules/DatePicker/_archive/DatePicker.native.v1.tsx
+  note: "react-day-picker (não-Radix); Popover wrapper via @/vendor/popover"
+
+variants: {}
+sizes: [lg]
+states: [closed, open, selected, disabled, error]
+
+bem:
+  block: date-picker
+  elements:
+    [trigger, input, label, calendar, header, nav, month-label,
+     grid, weekday, day]
+  modifiers:
+    open: [open]
+    disabled: [disabled]
+    error: [error]
+    today: [today]
+    selected: [selected]
+    other-month: [other-month]
+    disabled-day: [disabled]
+
+html_structure: |
+  <div class="date-picker date-picker--open">
+    <label class="date-picker__label" for="dp-{id}">Data</label>
+    <input class="date-picker__input" id="dp-{id}" type="text"
+           readonly aria-expanded="true" aria-controls="dp-cal-{id}"/>
+    <div class="date-picker__calendar" id="dp-cal-{id}" role="dialog" aria-label="Selecionar data">
+      <header class="date-picker__header">
+        <button class="date-picker__nav" type="button" aria-label="Mês anterior">&lt;</button>
+        <span class="date-picker__month-label">maio 2026</span>
+        <button class="date-picker__nav" type="button" aria-label="Próximo mês">&gt;</button>
+      </header>
+      <div class="date-picker__grid" role="grid">
+        <div role="row" class="date-picker__weekday-row">
+          <span role="columnheader" class="date-picker__weekday">D</span>
+          <!-- ... S T Q Q S S -->
+        </div>
+        <div role="row">
+          <button class="date-picker__day date-picker__day--other-month" role="gridcell" tabindex="-1">28</button>
+          <button class="date-picker__day date-picker__day--today" role="gridcell" tabindex="0" aria-current="date">15</button>
+          <button class="date-picker__day date-picker__day--selected" role="gridcell" tabindex="-1" aria-selected="true">20</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+a11y_native:
+  pattern: datepicker-grid
+  required:
+    - "Grid com role='grid'; semanas com role='row'; dias com role='gridcell'"
+    - "Botões prev/next mês com aria-label"
+    - "Setas movem dia atual; PgUp/PgDn troca mês; Shift+PgUp/Dn troca ano"
+    - "Home/End início/fim da semana"
+    - "Enter seleciona; Escape fecha sem confirmar"
+    - "aria-current='date' no hoje; aria-selected na data escolhida"
+    - "Return focus ao trigger ao fechar"
+    - "z-index: var(--semantic-z-dropdown)"
+
+rhythm:
+  internal_item_gap: stack-xs
+  internal_group_gap: stack-sm
+  container_padding: inset-md
+  heading_association_respected: false
+  first_last_reset_required: true
+  composition_gap: null
+  exceptions: []
+
+tokens:
+  shared:
+    bg: --semantic-bg-surface
+    border: --semantic-border-default
+    radius: --semantic-radius-surface
+    shadow: --semantic-shadow-overlay
+    z: --semantic-z-dropdown
+
+a11y:
+  role: dialog
+  keyboard:
+    - ArrowLeft, ArrowRight, ArrowUp, ArrowDown
+    - PageUp, PageDown, "Shift+PageUp", "Shift+PageDown"
+    - Home, End, Enter, Escape
+  required_aria:
+    - "calendar.role=dialog"
+    - "grid.role=grid"
+    - "rows.role=row"
+    - "days.role=gridcell + aria-current/aria-selected"
+  wcag_criteria: ["1.4.3", "2.1.1", "2.4.7"]
+
+api:
+  props:
+    label: { type: string, required: true }
+    value: { type: "Date | null", required: false }
+    onChange: { type: function, required: false }
+    minDate: { type: Date, required: false }
+    maxDate: { type: Date, required: false }
+    placeholder: { type: string, default: "dd/mm/aaaa" }
+    isDisabled: { type: boolean, default: false }
+    isError: { type: boolean, default: false }
+  events: [onChange]
+
+outputs: [tsx, types, contract, stories]
+
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-15
+  round: 3
+  wave: overlay-lot-4

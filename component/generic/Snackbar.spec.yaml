@@ -1,0 +1,205 @@
+# =============================================================================
+# Snackbar.spec.yaml — Contrato canônico Round 4
+# Spec criado retroativamente — CSS+adapter existiam desde Round 3.3 sem spec
+# formal no template v2. Upgradeado em 2026-05-19.
+# =============================================================================
+
+component: Snackbar
+version: 0.1.0
+kind: generic
+status: draft
+category: feedback
+atomic_level: organism
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+# Snackbar na vendor_whitelist (squad-policy.yaml). Usa primitivo sonner.
+# Compartilha o mesmo VendorToaster do Toast — montado via ToastProvider.
+vendor:
+  primitive: sonner
+  install_path: src/vendor/sonner.tsx
+  import_alias: "@/vendor/sonner"
+
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+# Snackbar não tem variantes visuais — diferença é comportamental (ação obrigatória).
+variants: {}
+
+sizes: []
+
+states:
+  - enter
+  - visible
+  - exit
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: snackbar
+  elements:
+    - message
+    - action
+    - close
+  modifiers: {}
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <!-- Renderizado dentro do region container do Toaster (sonner) -->
+  <div class="snackbar" role="status" aria-live="polite">
+    <div class="snackbar__message">Item movido para a lixeira</div>
+    <button type="button" class="snackbar__action">Desfazer</button>
+    <button type="button" class="snackbar__close" aria-label="Fechar">×</button>
+  </div>
+
+# ── A11Y NATIVA ──────────────────────────────────────────────────────────────
+a11y_native:
+  pattern: toast-live-region
+  required:
+    - "role='status' + aria-live='polite' no elemento raiz"
+    - "action button com label descritivo (verbo: Desfazer, Tentar novamente)"
+    - "close button com aria-label='Fechar'"
+    - "duration mínimo 6000ms quando há action (WCAG 2.2.1)"
+    - "Region container (sonner Toaster) declara aria-live no nível acima"
+
+# ── TOKENS ───────────────────────────────────────────────────────────────────
+tokens:
+  shared:
+    bg: --sf-bg-elevated
+    text: --sf-text-on-elevated
+    border: --sf-border-strong
+    radius: --sf-radius-control
+    shadow: --sf-shadow-toast
+    space-inset-sm: --sf-space-inset-sm
+    space-inset-md: --sf-space-inset-md
+    space-inline-md: --sf-space-inline-md
+    type-body: --sf-type-body
+    type-label: --sf-type-label
+    action-color: --sf-text-link-on-elevated
+    action-color-hover: --sf-text-link-hover-on-elevated
+    close-color: --sf-text-tertiary
+    close-size: --sf-size-control-sm
+    radius-control-sm: --sf-radius-control-sm
+    focus-ring: --sf-shadow-focus-ring
+
+# ── DRIFT DETECTION ──────────────────────────────────────────────────────────
+tokens_type:
+  - body
+  - label
+
+tokens_shadow:
+  - focus-ring
+  - toast
+
+tokens_motion: []
+
+tokens_z: []
+
+tokens_container: []
+
+tokens_icon: []
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: inline-md
+  internal_group_gap: null
+  container_padding: inset-sm
+  heading_association_respected: false
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions:
+    - "Layout horizontal inline-flex; não há stack vertical interno"
+    - "Action e close têm padding-block: inset-xs (menor que o container)"
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: status
+  semantic_element: div
+  keyboard:
+    - Tab
+    - Enter
+    - Escape
+  focus_visible: required
+  required_aria:
+    - role=status
+    - aria-live=polite
+    - aria-label=Fechar no botão close
+  wcag_criteria:
+    - "1.4.3"
+    - "2.2.1"
+    - "2.2.3"
+    - "4.1.3"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+# Snackbar expõe função imperativa notifyAction(), não um componente montável.
+api:
+  props: {}
+  fn:
+    name: notifyAction
+    args:
+      message:
+        type: ReactNode
+        required: true
+        description: "Texto principal do snackbar."
+      action:
+        type: "{ label: string; onClick: () => void }"
+        required: false
+        description: "Ação primária (Desfazer/Tentar novamente). Dismiss automático após onClick."
+      id:
+        type: "string | number"
+        required: false
+        description: "ID manual para dismiss programático via notifyAction.dismiss(id)."
+      duration:
+        type: number
+        default: 6000
+        required: false
+        description: "Duração em ms antes do auto-dismiss. Mínimo 6000 quando há action (WCAG 2.2.1)."
+  events: []
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    node: TBD
+  foundations: squads/magic-ds/foundations/07-token-architecture-v3.md
+  governance: squads/magic-ds/governance/matrix.md
+  component_kinds: squads/magic-ds/governance/component-kinds.md
+  canonical_css: squads/magic-ds/output/css/snackbar.css
+  adapter: src/components/organisms/Snackbar/Snackbar.tsx
+  squad_spec: squads/magic-ds/component/generic/Snackbar.spec.yaml
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-15
+  last_modified: 2026-05-19
+  round: 4
+  wave: post-cleanup
+  notes: |
+    Spec criado retroativamente em 2026-05-19 — componente existia em CSS+adapter
+    desde Round 3.3 (wave overlay-lot-4) mas sem spec no template v2 completo.
+    Upgradeado de stub Round 3 para spec Round 4 em 2026-05-19.
+    API é imperativa (notifyAction fn), não declarativa. Compartilha VendorToaster
+    com Toast — não precisa montar provider próprio.

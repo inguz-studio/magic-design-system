@@ -1,0 +1,233 @@
+# =============================================================================
+# NavItem.spec.yaml — Item de navegação (filho de Sidebar)
+# =============================================================================
+# Migrado pro template v2 (dual output: canonical CSS+HTML + adapter React+TW).
+# =============================================================================
+
+component: NavItem
+version: 0.2.0
+kind: generic
+status: draft
+category: navigation
+atomic_level: molecule
+
+products: [shelflix-admin]
+tenants: [shelflix]
+
+# ── VENDOR ───────────────────────────────────────────────────────────────────
+vendor:
+  primitive: null
+# ── VARIANTES ────────────────────────────────────────────────────────────────
+variants:
+  layout: [horizontal, icon-only]
+
+sizes: []
+
+states:
+  - default
+  - hover
+  - focus-visible
+  - selected
+  - disabled
+
+# ── BEM CLASSES ──────────────────────────────────────────────────────────────
+bem:
+  block: nav-item
+  elements:
+    - label
+  modifiers:
+    intent: [selected, disabled]
+    size: []
+    state: [selected, disabled, icon-only]
+
+# ── HTML SEMÂNTICO CANÔNICO ──────────────────────────────────────────────────
+html_structure: |
+  <!-- Renderiza como <a> quando href está presente; <button> quando onClick -->
+  <a
+    class="nav-item {nav-item--selected} {nav-item--icon-only}"
+    href="{href}"
+    aria-current="{page|undefined}"
+    aria-label="{label when icon-only}"
+  >
+    <!-- icon slot -->
+    {icon}
+    <!-- label — oculto visualmente quando layout=icon-only -->
+    <span class="nav-item__label">{label}</span>
+  </a>
+
+# ── MAPPING DE TOKENS ────────────────────────────────────────────────────────
+tokens:
+  shared:
+    height: --semantic-size-control-md
+    border-radius: --semantic-radius-control
+    gap: --semantic-space-inline-md
+    padding-inline: --semantic-space-inset-md
+    motion: --semantic-motion-interaction
+    icon-size: --semantic-size-icon-md
+    font-size: --primitive-text-sm
+
+  default:
+    background: transparent
+    text: --semantic-text-secondary
+    icon-color: --semantic-text-secondary
+  hover:
+    background: --semantic-sidebar-item-bg-hover
+    text: --semantic-text-primary
+    icon-color: --semantic-text-primary
+  focus-visible:
+    outline: --semantic-border-focus
+    outline-width: 2px
+    outline-offset: 2px
+  selected:
+    background: --semantic-sidebar-item-bg-selected
+    text: --semantic-sidebar-item-text-selected
+    icon-color: --semantic-sidebar-item-text-selected
+    font-weight: 600
+  disabled:
+    background: transparent
+    text: --semantic-text-disabled
+    icon-color: --semantic-text-disabled
+    cursor: not-allowed
+
+  horizontal:
+    width: 100%
+    justify-content: flex-start
+  icon-only:
+    width: --semantic-size-control-md
+    justify-content: center
+    padding-inline: 0
+
+# ── RITMO VERTICAL ───────────────────────────────────────────────────────────
+rhythm:
+  internal_item_gap: inline-md
+  internal_group_gap: n/a
+  container_padding: inset-md
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: null
+  exceptions: []
+
+# ── ACESSIBILIDADE ───────────────────────────────────────────────────────────
+a11y:
+  role: link
+  semantic_element: a
+  keyboard:
+    - Enter
+    - Space
+  focus_visible: required
+  required_aria:
+    - "aria-current='page' quando selected"
+    - "aria-label quando layout=icon-only (sem label visível)"
+    - "aria-disabled quando disabled"
+  wcag_criteria:
+    - "1.4.3"
+    - "2.1.1"
+    - "2.4.7"
+    - "2.5.5"
+  notes:
+    - "Quando layout=icon-only, label vira aria-label e title."
+    - "Se NavItem disparar ação (não navegar), usar <button> em vez de <a>."
+
+# ── CONTEÚDO (COPY DE REFERÊNCIA) ────────────────────────────────────────────
+content:
+  navitem.dashboard: "Dashboard"
+  navitem.materiais: "Materiais"
+  navitem.clientes: "Clientes"
+  navitem.logout: "Logout"
+
+# ── API PÚBLICA ──────────────────────────────────────────────────────────────
+api:
+  props:
+    icon:
+      type: ReactNode
+      required: true
+      description: "Ícone à esquerda do label."
+    label:
+      type: string
+      required: true
+      description: "Texto visível. Em layout=icon-only vira aria-label."
+    layout:
+      type: enum
+      values: [horizontal, icon-only]
+      default: horizontal
+      required: false
+    isSelected:
+      type: boolean
+      default: false
+      required: false
+    isDisabled:
+      type: boolean
+      default: false
+      required: false
+    href:
+      type: string
+      required: false
+      description: "Se presente, renderiza como <a>."
+    onClick:
+      type: function
+      signature: "(event: React.MouseEvent) => void"
+      required: false
+  events:
+    - onClick
+    - onFocus
+
+# ── OUTPUTS ──────────────────────────────────────────────────────────────────
+outputs:
+  canonical:
+    - html
+    - css
+  tailwind:
+    auto: true
+  adapter_react:
+    enabled: true
+    artifacts:
+      - tsx
+      - types
+      - contract
+  documentation:
+    - stories
+
+# ── THEME OVERRIDES ──────────────────────────────────────────────────────────
+theme_overrides:
+  shelflix-admin: []
+
+# ── GAPS PARA FOUNDATIONS ────────────────────────────────────────────────────
+gaps_for_foundations: []
+
+# ── RASTREABILIDADE ──────────────────────────────────────────────────────────
+references:
+  figma:
+    file: zYrfb4icuUdsXJHKBmZiAY
+    nodes:
+      - "41:1155 (Navigation — master)"
+      - "41:1154 (Property 1=Selected)"
+      - "41:1153 (Property 1=No Selected)"
+      - "41:1152 (Property 1=Hover)"
+  audit: squads/magic-ds/audit/04-figma-complete-audit.md
+  foundations: squads/magic-ds/foundations/02-token-architecture.md
+  governance: squads/magic-ds/governance/03-governance-validation.md
+  output:
+    canonical_css: squads/magic-ds/output/css/nav-item.css
+    canonical_html: squads/magic-ds/output/html/nav-item.html
+    adapter_react: src/components/molecules/NavItem/
+
+# ── METADADOS ────────────────────────────────────────────────────────────────
+meta:
+  owner: mds-component
+  created: 2026-05-13
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+  template_version: 2.0.0
+  used_in: [Sidebar]
+  migration_notes:
+    - "2026-05-14: migrado pro template v2 dual-output. Adicionado bem:, html_structure:, products:, outputs: canonical+adapter. CVA substituído por mapa BEM estático no adapter React."
+
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - body
+  - action (selected modifier emphasis)
+
+# Next required step: mds-audit *design-check --target NavItem.spec.yaml.
+# Cannot proceed to mds-ops until score >= B.

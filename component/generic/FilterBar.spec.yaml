@@ -1,0 +1,72 @@
+component: FilterBar
+version: 0.1.0
+kind: generic
+status: draft
+tenants: [shelflix]
+category: control
+atomic_level: molecule
+
+vendor:
+  primitive: null
+  install_path: null
+  import_alias: null
+  note: "Container composicional — children são Selects/Inputs externos"
+
+variants: {}
+sizes: []
+states: [default]
+
+tokens:
+  shared:
+    background: --semantic-bg-surface
+    border: --semantic-border-default
+    radius: --semantic-radius-surface
+    padding: --semantic-space-inset-lg
+    gap: --semantic-space-inline-md
+
+rhythm:
+  internal_item_gap: inline-md
+  internal_group_gap: n/a
+  container_padding: inset-lg
+  heading_association_respected: true
+  first_last_reset_required: false
+  composition_gap: inline-md
+  exceptions: []
+
+a11y:
+  role: group
+  semantic_element: div
+  required_aria: ["aria-label (auto: 'Filtros')"]
+  wcag_criteria: ["1.3.1", "2.4.6"]
+
+content:
+  filterbar.aria-label: "Filtros"
+
+api:
+  props:
+    children: { type: ReactNode, required: true, note: "N Selects ou outros controles" }
+
+outputs: [tsx, types, contract, stories]
+
+composes: [Select]
+
+gaps_for_foundations: []
+
+references:
+  squad_spec: squads/magic-ds/component/FilterBar.spec.yaml
+
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 2
+
+
+# Round 3.1 type roles consumidos (--semantic-type-*):
+tokens_type:
+  - label (__label)
+  - caption (__clear)
+
+# Next required step: mds-audit *design-check --target FilterBar.spec.yaml.
+# Cannot proceed to mds-ops until score ≥ B.

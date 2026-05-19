@@ -1,0 +1,126 @@
+component: AppBackground
+version: 0.1.0
+kind: background
+status: draft
+tenants: [shelflix]
+category: layout
+atomic_level: template
+
+description: |
+  Background principal da aplicação. Aceita múltiplas variants (solid, gradient,
+  animated, image, pattern) para permitir nuances visuais por produto/cliente
+  sem refactor estrutural. Variant ativa controlada pelo Theme via
+  `background.kind` no theme YAML.
+
+# Backgrounds são "neutros" — qualquer tenant pode usar. Mas a escolha de
+# variant é por theme (produto/cliente). Adoption automática (sem opt-in).
+
+variants:
+  kind: [solid, gradient, animated, image, pattern]
+
+sizes: []
+states: [default]
+
+# ── BEM ───────────────────────────────────────────────────────────────────
+bem:
+  block: app-background
+  elements: [layer, overlay]
+  modifiers:
+    kind: [solid, gradient, animated, image, pattern]
+
+# ── HTML estrutura ─────────────────────────────────────────────────────────
+html_structure: |
+  <div class="app-background app-background--{kind}" aria-hidden="true">
+    <!-- Para kind=solid: vazio (CSS pinta o bloco) -->
+    <!-- Para kind=gradient: vazio (CSS aplica gradient) -->
+    <!-- Para kind=animated: <canvas>, <video>, ou SVG animado dentro de .app-background__layer -->
+    <!-- Para kind=image: <img class="app-background__layer"> -->
+    <!-- Para kind=pattern: SVG repetível em .app-background__layer -->
+  </div>
+
+# ── Tokens consumidos ──────────────────────────────────────────────────────
+tokens:
+  shared:
+    z-index: 0
+
+  solid:
+    background: --semantic-bg-canvas
+
+  gradient:
+    from: --semantic-bg-canvas
+    to: --semantic-bg-subtle
+    angle: "180deg"
+
+  animated:
+    background: --semantic-bg-canvas
+    overlay: --semantic-bg-canvas
+    overlay-opacity: 0.6
+    note: "Performance: respeitar prefers-reduced-motion; spec exige fallback estático"
+
+  image:
+    background: --semantic-bg-canvas
+    overlay: rgba(0, 0, 0, 0.4)
+    fit: cover
+
+  pattern:
+    background: --semantic-bg-canvas
+    pattern-color: --semantic-border-subtle
+
+# ── Ritmo (não aplicável — é background) ──────────────────────────────────
+rhythm:
+  internal_item_gap: n/a
+  internal_group_gap: n/a
+  container_padding: n/a
+  heading_association_respected: false
+  first_last_reset_required: false
+  exceptions:
+    - "Componente de fundo — não participa do rhythm de conteúdo."
+
+# ── A11y ──────────────────────────────────────────────────────────────────
+a11y:
+  semantic_element: div
+  required_aria: ["aria-hidden='true' (decorativo)"]
+  wcag_criteria: ["1.4.3 (contraste com conteúdo sobreposto)", "2.3.3 (animation)"]
+  reduce_motion: required  # variant animated DEVE respeitar prefers-reduced-motion
+
+# ── API React ─────────────────────────────────────────────────────────────
+api:
+  props:
+    kind: { type: enum, values: [solid, gradient, animated, image, pattern], default: solid }
+    src:  { type: string, required: false, note: "Para kind=image" }
+    component: { type: ReactNode, required: false, note: "Para kind=animated (canvas/svg custom)" }
+
+# ── Outputs ────────────────────────────────────────────────────────────────
+outputs:
+  canonical: [html, css]
+  # Desligado em 2026-05-18 — componente não está sendo consumido. Religar quando o produto for usar.
+  adapter_react: { enabled: false }
+
+# ── Composição ─────────────────────────────────────────────────────────────
+composes: []
+
+# ── Gaps ───────────────────────────────────────────────────────────────────
+gaps_for_foundations: []
+
+# ── Rastreabilidade ────────────────────────────────────────────────────────
+references:
+  squad_spec: squads/magic-ds/component/background/AppBackground.spec.yaml
+
+# ── Theme integration ──────────────────────────────────────────────────────
+# Cada theme.yaml declara qual variant usar:
+# background:
+#   kind: gradient
+#   options:
+#     gradient-from: var(--primitive-orange-950)
+#     gradient-to: var(--primitive-neutral-800)
+#     gradient-angle: 180deg
+
+meta:
+  owner: mds-component
+  created: 2026-05-14
+  last_modified: 2026-05-14
+  round: 2
+  wave: 6
+
+# Next required step: mds-audit *design-check --target AppBackground.spec.yaml.
+# Cannot proceed to mds-ops until score ≥ B.
