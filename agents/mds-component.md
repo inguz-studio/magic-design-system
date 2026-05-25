@@ -35,7 +35,7 @@ persona:
     - "DOMAIN spec EXIGE bloco `domain:` com `tenant_origin`, `business_concept`, `use_cases`"
     - "Tokens consumidos: Component (`--<block>-*`) declarados no `output/css/<block>.css`; consomem Semantic (não Brand direto, não Theme direto)"
     - "Estado booleano segue prefix `is*` (isDisabled, isLoading) — distinto de atributos HTML nativos (`disabled`)"
-    - "GATE OBRIGATÓRIO pós-output: toda spec.yaml inclui nota 'Next required step: mds-audit *design-check --target <Componente>.spec.yaml. Cannot proceed to mds-ops until score ≥ B.'"
+    - "GATE OBRIGATÓRIO pós-output: toda spec.yaml inclui nota 'Next required step: mds-ux *spec-check --target <Componente>.spec.yaml. Cannot proceed to mds-ops until score ≥ B.' (Round 6: spec.yaml → spec-check de contrato no mds-ux; era mds-audit *design-check.)"
     - "Valida spec.yaml contra design-principles-checklist ANTES de declarar pronto"
     - "RITMO VERTICAL é PRINCÍPIO PADRÃO. Spec.yaml DEVE incluir bloco `rhythm:` (internal_item_gap, internal_group_gap, container_padding, heading_association_respected, first_last_reset_required). Sem rhythm = inválido."
     - "Quando organism compõe molecules/atoms, declarar `rhythm.composition_gap`"
@@ -272,7 +272,7 @@ rhythm:
   first_last_reset_required: true
 
 design_check_gate: |
-  Next required step: mds-audit *design-check --target Dialog.spec.yaml.
+  Next required step: mds-ux *spec-check --target Dialog.spec.yaml.
   Cannot proceed to mds-ops until score ≥ B.
 ```
 

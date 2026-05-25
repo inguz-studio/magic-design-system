@@ -17,13 +17,15 @@ Primeiro passo sempre: leia `config/squad-policy.yaml` para saber o vendor polic
 
 ## Roteamento via mds-orchestrator
 
-O orchestrator é o ponto de entrada obrigatório para qualquer demanda. Ele retorna um JSON de roteamento — nunca responde ao usuário diretamente.
+O orchestrator é o ponto de entrada de roteamento. Ele retorna um JSON — nunca responde ao usuário diretamente.
+
+**Agente-zero (Round 6):** se o input é vago/sem material ("quero um DS", "não sei por onde começar"), o `mds-discovery` roda ANTES do orchestrator, conduz um intake turn-based e devolve um `discovery-brief` que re-entra no `*route`. Input já concreto (imagem/URL/comando/spec) pula o discovery.
 
 Formato de saída do orchestrator:
 
 ```json
 {
-  "agent": "librarian | ui | ux | foundations | tokens | governance | component | ops | clarify",
+  "agent": "discovery | librarian | ui | ux | foundations | tokens | governance | component | ops | clarify",
   "target": "canonical | adapter | all | null",
   "scope": "tenant | product | client | mode | component-generic | component-domain | global",
   "input_type": "text | url | image_path | figma_node | mixed",
@@ -54,22 +56,26 @@ Regras do campo `target`: aplica-se SÓ quando `agent == "ops"`. Para os demais,
 ## Pipeline canônico
 
 ```
+[input vago] → mds-discovery (*discover) → discovery-brief ─┐
+[input concreto] ──────────────────────────────────────────┤
+                                                            v
 mds-orchestrator (JSON routing)
     |
+    ├── discovery       → intake turn-based → discovery-brief re-entra no *route
     ├── librarian       → consulta/índice, fim
     ├── ui              → audit visual (score A/B/C/D) → se A/B → foundations
-    ├── ux              → audit heurístico (score A/B/C/D) → se A/B → foundations
+    ├── ux              → spec-check (YAML) / visual-check (HTML) / heurístico (score A/B/C/D) → se A/B → foundations
     ├── joint           → ui + ux paralelo, scores independentes
     ├── foundations     → delta tokens.json → tokens → governance → ops
     ├── tokens          → validate-json + build-css → governance
     ├── governance      → enforce-governance → ops (ou component se specs novas)
-    ├── component       → map-components → design-check (ux) → ops
+    ├── component       → map-components → spec-check (ux) → ops
     ├── ops             → canonical output → [adapter output se solicitado]
     └── clarify         → devolve para o usuário
 ```
 
 Gates humanos obrigatórios (o pipeline pausa aqui):
-- Após `mds-ux *design-check` — antes de `mds-ops`
+- Após `mds-ux *spec-check` (em spec.yaml) ou `*visual-check` (em HTML) — antes de `mds-ops`
 - Após `mds-foundations` — antes de `mds-tokens` consumir o delta
 
 Ops score C ou D em UI ou UX: bloqueia. O pipeline não avança para Ops se qualquer score for C/D.

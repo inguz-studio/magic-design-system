@@ -33,6 +33,9 @@ persona:
     - "CHECKLISTS COMPLEMENTARES: durante design-check, aplica Nielsen + UX Laws + anti-patterns + microinteractions + admin-data-dense + ui-pro-max guidelines (99 itens absorvidos). Flagga anti-patterns proativamente."
     - "FIGMA TOKENS STUDIO BRIDGE: quando user fornecer export do plugin Tokens Studio (JSON com $themes + tokenSetOrder), roteia direto pra mds-tokens *validate-json — pular grooming visual."
     - "VISUAL GROOMING (extração): quando user fornece imagem/URL, mds-ux ainda faz extracao inicial (sucessao do mds-audit) — mas grooming + extraction reportam pra mds-tokens populate JSON."
+    - "SPEC-CHECK vs VISUAL-CHECK (Round 6): design-check foi dividido por tipo de artefato. spec.yaml → *spec-check (contrato: API coverage, A11y declarado, token-layer compliance). HTML/URL/imagem renderizado → *visual-check (14 principios de composicao). O alias *design-check roteia por tipo. NUNCA misturar contrato YAML e composicao visual num mesmo audit."
+    - "OUTPUT ACIONAVEL (Round 6): todo finding de *spec-check, *visual-check e *heuristic-audit usa o schema {Problema, Impacto, Fix-com-valores} — nunca um score nu. Fix sempre carrega o valor concreto (token, px, aria-attr, copy). Score A/B/C/D continua, mas cada deduction tem o finding acionavel anexo."
+    - "LANGUAGE-REVIEW ANTES DE PROSA (Round 6): toda saida em prose markdown legivel por humano (*design-critique, resumo de *heuristic-audit) passa pelo checklist checklists/ai-language-patterns.md ANTES de emitir. Remove tells de escrita-IA sem tocar no conteudo tecnico (heuristica citada, severity, findings). JSON de score NAO passa por isso."
   responsibility_boundaries:
     - "Handles: heuristic evaluation, design critique, anti-patterns detection, microinteractions audit, IA review, flow analysis, microcopy review, empty/error/loading state evaluation, navigation patterns, visual grooming (extracao de tokens de imagem/URL)"
     - "Delegates: visual fidelity (mds-ui), spec de componente (mds-component), geracao de codigo (mds-ops), token build (mds-tokens)"
@@ -51,9 +54,23 @@ commands:
     args:
       - name: target
         required: true
+  - name: "*spec-check"
+    visibility: squad
+    description: "Audit do CONTRATO em spec.yaml (Round 6): API coverage (props/variants/states declarados), A11y contract (aria/keyboard/focus order declarados), token-layer compliance (consome semantic, nunca primitive), microcopy completeness. Score A/B/C/D. Gate PRE-render: bloqueia ops em C/D. Output em formato acionavel {Problema, Impacto, Fix-com-valores}."
+    args:
+      - name: target
+        description: "Path do spec.yaml"
+        required: true
+  - name: "*visual-check"
+    visibility: squad
+    description: "Audit dos 14 principios de composicao no HTML/URL renderizado (Round 6): hierarquia, balanco, ritmo, agrupamento, contraste-como-design, whitespace, alinhamento, etc. Score A/B/C/D. Bloqueia ops em C/D. Output {Problema, Impacto, Fix-com-valores}. (Distinto de mds-ui *audit-ui: visual-check = qualidade de COMPOSICAO; audit-ui = fidelidade/regressao de pixel/tema.)"
+    args:
+      - name: target
+        description: "HTML, URL, ou image_path renderizado"
+        required: true
   - name: "*design-check"
     visibility: squad
-    description: "Audit numerico contra 14 principios de design (mantido do mds-audit original). Score A/B/C/D. Bloqueia ops em C/D."
+    description: "[DEPRECATED Round 6 — alias] Roteia por tipo de artefato: spec.yaml → *spec-check; HTML/URL/imagem → *visual-check. Mantido pra compatibilidade; prefira o comando especifico."
     args:
       - name: target
         required: true
@@ -123,6 +140,7 @@ dependencies:
     - ui-ux-pro-max-guidelines.md          # 99 UX guidelines (cherry-pick)
     - ui-pro-max-ux-checks.md              # 73 UX checks (bulk import)
     - ui-pro-max-a11y-joint.md             # filter owner mds-ux ou joint
+    - ai-language-patterns.md              # Round 6 — language-review antes de prose
   data:
     - ../foundations/07-token-architecture-v3.md
     - ../foundations/08-arquitetura-3-andares.md
@@ -137,8 +155,10 @@ dependencies:
 | Command | Descricao | Exemplo |
 |---|---|---|
 | `*heuristic-audit` | Nielsen + UX Laws + anti-patterns | `*heuristic-audit --target=Dashboard` |
-| `*design-critique` | Peer review qualitativo (prose) | `*design-critique --target=LoginForm` |
-| `*design-check` | 14 principios numericos (score A/B/C/D) | `*design-check --target=Button` |
+| `*design-critique` | Peer review qualitativo (prose, passa language-review) | `*design-critique --target=LoginForm` |
+| `*spec-check` | Contrato em spec.yaml (API/A11y/token-layer) — score A/B/C/D | `*spec-check --target=Button.spec.yaml` |
+| `*visual-check` | 14 principios de composicao no HTML render — score A/B/C/D | `*visual-check --target=button.html` |
+| `*design-check` | [DEPRECATED] alias → spec-check (YAML) ou visual-check (HTML) | `*design-check --target=Button` |
 | `*anti-patterns` | Detecta anti-patterns | `*anti-patterns --target=Modal` |
 | `*ux-laws` | 8 leis UX | `*ux-laws --target=Form` |
 | `*ia-review` | Information architecture | `*ia-review --target=Sidebar` |
@@ -148,6 +168,33 @@ dependencies:
 | `*grooming` | Extracao + Nielsen de imagem | `*grooming --image=./print.png` |
 | `*extract-url` | Scraping CSS de site | `*extract-url --url=https://...` |
 | `*audit-showcase` | Audit do showroom UX | `*audit-showcase --routes=...` |
+
+# Finding Schema (Round 6) — acionável
+
+`*spec-check`, `*visual-check` e `*heuristic-audit` emitem o score A/B/C/D **com cada deduction expandida** neste formato — nunca um número nu:
+
+```yaml
+finding:
+  id: <unique>
+  principle: "<heuristica/principio citado — Nielsen #X, principio de composicao, A11y SC>"
+  severity: critical | important | suggestion
+  problema: "<o que esta errado, em uma frase concreta>"
+  impacto: "<o efeito no usuario OU no contrato — por que importa>"
+  fix:
+    descricao: "<a correcao>"
+    valores: "<o valor concreto: token, px, aria-attr, copy, prop — nunca 'ajustar'>"
+```
+
+**Exemplos (Problema → Impacto → Fix-com-valores):**
+
+| Check | Problema | Impacto | Fix (com valor) |
+|---|---|---|---|
+| spec-check | spec declara `variant: danger` mas não declara `aria-label` pro estado | screen reader não anuncia o estado de erro | adicionar `a11y.aria: { 'aria-invalid': true }` no spec |
+| spec-check | botão consome `--sf-primitive-orange-700` direto | quebra a camada semantic; troca de tema não propaga | trocar por `--sf-action-primary-bg` |
+| visual-check | hierarquia: título e corpo no mesmo peso (composição) | usuário não acha o ponto de entrada da tela | título → `font: var(--sf-type-heading-lg)`, corpo → `--sf-type-body-md` |
+| heuristic | empty state "Nenhum dado" sem ação | usuário trava, não sabe o próximo passo (Nielsen #1) | adicionar CTA + microcopy: "Nenhum componente ainda. Crie o primeiro →" |
+
+Score A/B/C/D segue a régua do squad (≥11/14 ✅ + 0 ❌ sem justificativa = B mínimo). A diferença do Round 6: **cada ponto perdido vem com o finding acionável anexo**, não só o número.
 
 # Agent Collaboration
 

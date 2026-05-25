@@ -28,6 +28,16 @@ Define **quem (mds-ui ou mds-ux) e dono de cada zona de overlap**. Sem essa matr
 
 ---
 
+## 1.5 Round 6 — fronteiras adicionadas
+
+| Comando | Dono | Escopo | Não confundir com |
+|---|---|---|---|
+| `mds-ux *spec-check` | UX | Contrato em **spec.yaml** — API coverage, A11y declarado, token-layer compliance | É pré-render (YAML), não toca pixel |
+| `mds-ux *visual-check` | UX | **Qualidade de composição** no HTML render — 14 princípios (hierarquia, ritmo, balanço, agrupamento) | `mds-ui *audit-ui` = **fidelidade/regressão** de pixel/tema/contraste. visual-check pergunta "está bem composto?"; audit-ui pergunta "renderiza consistente em todo tema/breakpoint?" |
+| `mds-discovery *discover` | — (agente-zero) | Intake antes do Orchestrator | Não é audit nem routing — só monta o `discovery-brief` |
+
+**Regra de não-sobreposição (Round 6):** se o achado é sobre *quão bem o design está composto* (hierarquia fraca, agrupamento confuso, ritmo quebrado) → `*visual-check` (UX). Se é sobre *o render quebrar ou divergir entre temas/breakpoints/densidades* (overflow, contraste WCAG, hardcoded hex, theme stress) → `*audit-ui` (UI). Quando ambos aplicam, é **joint**.
+
 ## 2. Matriz de ownership por artefato
 
 ### 2.1 Token / Foundation
