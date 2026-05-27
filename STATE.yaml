@@ -1,0 +1,114 @@
+# =============================================================================
+# STATE.yaml — Estado persistente do system magic-ds
+# =============================================================================
+# Estado de boot e runtime do organismo. Sobrevive a /compact, fim de sessão e
+# reinstall porque vive em disco (não em memória de conversa).
+#
+# Schema derivado de fontes REAIS que já funcionam como estado:
+#   - config/squad-policy.yaml  → política ativa do projeto consumidor (procedural)
+#   - CLAUDE.md                 → o que todo agente assume carregado no boot
+#   - config/routing.yaml       → roteamento ativo
+#   - governance/               → camada de regras transversal lida no boot
+#
+# Consumido por: todos os agentes no boot (E2 constituição re-injetada);
+# mds-orchestrator lê routing_active; validators leem policy_active.
+# =============================================================================
+
+version: 2.1.0
+system: magic-ds
+schema: design-system-system        # operacional (governança+tokens+componentes+gates), não cognitivo
+
+# ── Boot contract (o que todo agente carrega ANTES de agir) ──────────────────
+# CLAUDE.md: "Primeiro passo sempre: leia config/squad-policy.yaml".
+boot:
+  always_loaded:
+    - CLAUDE.md                      # constituição operacional do squad
+    - config/squad-policy.yaml       # política ativa do projeto (vendor/css/validators/prefix)
+    - config/routing.yaml            # roteamento + gates
+  read_on_demand:
+    - governance/                    # regras transversais (matrix, theme-contract, ownership, prefix)
+    - foundations/                   # arquitetura de tokens 3 andares, 8 dimensões
+    - workflows/magic-ds-pipeline.yaml
+  first_action: "ler config/squad-policy.yaml (vendor policy, CSS strategy, prefix ativos)"
+
+# ── Política ativa (espelha config/squad-policy.yaml — fonte de verdade) ─────
+# Estado procedural: qual projeto consumidor está ativo e suas regras.
+policy_active:
+  project: "{{project}}"             # placeholder de template; ex. de uso interno: shelflix-admin
+  policy_version: 1.0
+  policy_file: config/squad-policy.yaml
+  token_prefix: "{{token_prefix}}"   # placeholder; por projeto (ex.: Shelflix → sf → --sf-*). Squad NÃO assume default
+  vendor:
+    allow_radix: true
+    allow_shadcn: true
+    preferred_a11y_strategy: mixed
+    vendor_isolation_path: /src/vendor/
+  css:
+    allow_cva: false                 # CVA banido
+    allow_tailwind_arbitrary: false
+    styling: tailwind-v4
+  validators:
+    block_cva: true
+    block_hardcoded_tokens: true
+    enforce_vendor_isolation: true
+
+# ── Roteamento ativo (espelha config/routing.yaml) ───────────────────────────
+routing_active:
+  entry_point: mds-orchestrator
+  pre_router: mds-discovery
+  routing_file: config/routing.yaml
+
+# ── Roster vivo (componentes do organismo) ───────────────────────────────────
+components:
+  agents_live: 10
+  agents_deprecated: 1               # mds-audit (alias redirect)
+  roster:
+    - mds-discovery
+    - mds-orchestrator
+    - mds-librarian
+    - mds-ui
+    - mds-ux
+    - mds-foundations
+    - mds-tokens
+    - mds-governance
+    - mds-component
+    - mds-ops
+  deprecated:
+    - { name: mds-audit, redirect_to: [mds-ui, mds-ux] }
+
+# ── Estado dos artefatos (onde vivem — squad é infraestrutura) ───────────────
+# Tokens reais NUNCA vivem dentro de squads/magic-ds/ (regra do CLAUDE.md).
+artifact_locations:
+  tokens_source: "src/styles/tokens.json"            # fonte de verdade W3C (no projeto consumidor)
+  tokens_generated: "src/styles/tokens-generated.css" # gerado; nunca editado direto
+  component_tokens: "squads/magic-ds/output/css/<block>.css"
+  canonical_output: "squads/magic-ds/output/html/<block>.html + output/css/<block>.css"
+  adapter_output: "src/components/<Level>/<Name>/"
+
+# ── Gates ativos (estado de bloqueio — D4) ───────────────────────────────────
+gates:
+  ops_quality_block: "score C/D em UI ou UX → ops bloqueado"
+  human_approval_after: ["mds-ux *spec-check|*visual-check (antes de ops)", "mds-foundations (antes de tokens)"]
+  governance_blocking_rules: 12      # regras BLOQUEIA verificáveis (governance/matrix.md)
+
+# ── Theme contract (estado de conformidade) ──────────────────────────────────
+theme_contract:
+  semantic_dark_minimums: 28         # escopo semantic-dark completo (foundations/tokens/ui/CLAUDE)
+  required_core_tokens: 10           # required-core do theme.yaml (governance *enforce-rules)
+  note: "28 = escopo completo; 10 = subconjunto required-core. Contagens de escopos diferentes — não conflitam."
+  ref: governance/theme-contract.md
+
+# ── Sessão (estado volátil — reinicia a cada sessão) ─────────────────────────
+session:
+  last_route: null                   # preenchido em runtime pelo orchestrator
+  active_pipeline_stage: null
+  pending_human_gate: null
+  last_scores: { ui: null, ux: null }
+
+# ── Survival matrix (E10 — o que sobrevive a quê) ────────────────────────────
+survival:
+  STATE.yaml:               { compact: true,  session_end: true,  reinstall: true }
+  config/squad-policy.yaml: { compact: true,  session_end: true,  reinstall: true }
+  config/routing.yaml:      { compact: true,  session_end: true,  reinstall: true }
+  governance/:              { compact: true,  session_end: true,  reinstall: true }
+  session.*:                { compact: false, session_end: false, reinstall: false }

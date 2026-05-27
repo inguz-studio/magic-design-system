@@ -1,0 +1,146 @@
+# =============================================================================
+# routing.yaml — Roteamento canônico do system magic-ds
+# =============================================================================
+# Derivado de: squad.yaml (roster), CLAUDE.md (pipeline + envelope JSON + gates),
+# governance/skills-routing.md (verb→agente) e governance/ui-ux-ownership.md
+# (UI vs UX, joint dispatch, block_strategy).
+#
+# Consumido por: mds-orchestrator (dispatcher JSON) no boot e a cada *route.
+# O orchestrator é JSON-only: lê este arquivo, classifica o input, emite o
+# envelope. NUNCA responde ao usuário direto, NUNCA executa trabalho de domínio.
+# =============================================================================
+
+version: 2.1.0
+entry_point: mds-orchestrator
+pre_router: mds-discovery        # agente-zero: roda ANTES do orchestrator p/ input vago
+
+# ── Pre-routing (agente-zero, Round 6) ──────────────────────────────────────
+# Input vago/sem material → discovery faz intake turn-based e devolve
+# discovery-brief que re-entra no *route. Input concreto pula o discovery.
+pre_routing:
+  agent: mds-discovery
+  command: "*discover"
+  triggers:
+    - "quero um DS"
+    - "não sei o que tenho"
+    - "por onde começo"
+    - "vontade vaga sem material (sem imagem/URL/comando/spec)"
+  output: discovery-brief        # YAML que re-entra no orchestrator *route
+  bypass_when: "input já concreto — image_path | url | figma_node | comando | spec.yaml"
+
+# ── Envelope de saída do orchestrator (handoff canônico, D10) ────────────────
+handoff_envelope:
+  agent: "discovery | librarian | ui | ux | foundations | tokens | governance | component | ops | clarify | joint"
+  target: "canonical | adapter | all | null"   # aplica-se SÓ quando agent == ops; senão null
+  scope: "tenant | product | client | mode | component-generic | component-domain | global"
+  input_type: "text | url | image_path | figma_node | mixed"
+  payload: "<input original do usuário, preservado>"
+  reasoning: "justificativa breve do roteamento"
+  requires_human_approval: false
+
+# ── Roster (10 agentes vivos + 1 deprecated) ─────────────────────────────────
+agents:
+  mds-discovery:   { role: ROUTER,       boundary: "intake-only; só emite discovery-brief", status: live }
+  mds-orchestrator: { role: ORCHESTRATOR, boundary: "JSON-only; tools:[]; sem Write de domínio", status: live }
+  mds-librarian:   { role: SPECIALIST,   boundary: "read-only; nunca cria/modifica artefato", status: live }
+  mds-ui:          { role: VALIDATOR,     boundary: "fidelidade visual / regressão de tema; score A/B/C/D", status: live }
+  mds-ux:          { role: VALIDATOR,     boundary: "spec-check / visual-check / heurístico / critique; score A/B/C/D", status: live }
+  mds-foundations: { role: TRANSFORMER,   boundary: "entrega delta tokens.json; NÃO edita CSS", status: live }
+  mds-tokens:      { role: TRANSFORMER,   boundary: "valida JSON + build-css", status: live }
+  mds-governance:  { role: VALIDATOR,     boundary: "enforce naming/contract/matrix; 12 regras BLOQUEIA", status: live }
+  mds-component:   { role: SPECIALIST,    boundary: "spec.yaml + a11y nativa (8 patterns)", status: live }
+  mds-ops:         { role: EXECUTOR,      boundary: "gera canonical (obrigatório) + adapter (opcional)", status: live }
+  mds-audit:       { role: DEPRECATED,    boundary: "alias redirect → ui/ux", status: deprecated, redirect_to: [mds-ui, mds-ux] }
+
+# ── Roteamento por verb/intent (de governance/skills-routing.md) ─────────────
+intent_routes:
+  - intent: spec-check            # contrato YAML: API/props, A11y declarado, token-layer
+    triggers: ["valida spec", "contrato", "props/API", "A11y declarado", "alvo é *.spec.yaml"]
+    route: { agent: ux, command: "*spec-check" }
+  - intent: visual-check          # composição HTML: 14 princípios
+    triggers: ["audit", "check", "14 princípios", "consistência DS", "screenshot/HTML/URL render"]
+    route: { agent: ux, command: "*visual-check" }
+  - intent: design-critique       # peer review qualitativo (passa language-review)
+    triggers: ["o que você acha", "critique", "review", "[DESIGN]"]
+    route: { agent: ux, command: "*design-critique" }
+  - intent: ux-design             # conceitual: flow, IA, microcopy, handoff
+    triggers: ["como desenhar", "flow", "IA strategy", "microcopy", "discutir decisão"]
+    route: { agent: component, command: "*map-component" }
+  - intent: showroom-audit
+    triggers: ["audit showroom", "revise showroom", "validar showcase"]
+    route: { agent: ux, command: "*audit-showcase" }
+  - intent: ui-fidelity           # render quebrar/divergir entre temas/breakpoints
+    triggers: ["renderiza consistente", "regressão de tema", "overflow", "contraste WCAG", "hardcoded hex"]
+    route: { agent: ui, command: "*audit-ui" }
+  - intent: foundations
+    triggers: ["token novo", "fundação", "delta de tokens", "escala"]
+    route: { agent: foundations, command: "*build-foundations" }
+  - intent: tokens
+    triggers: ["build css", "valida tokens.json", "gera tokens-generated.css"]
+    route: { agent: tokens, command: "*build-css" }
+  - intent: governance
+    triggers: ["enforce", "valida naming", "valida camada", "matrix"]
+    route: { agent: governance, command: "*enforce-governance" }
+  - intent: component
+    triggers: ["novo componente", "mapeia componente", "spec do componente"]
+    route: { agent: component, command: "*map-component" }
+  - intent: ops
+    triggers: ["gera código", "canonical", "adapter", "build componente"]
+    route: { agent: ops, command: "*generate-ops-code" }
+  - intent: lookup
+    triggers: ["consulta", "índice", "existe esse token?", "lookup"]
+    route: { agent: librarian, command: "*lookup" }
+  - intent: discovery
+    triggers: ["quero um DS", "não sei o que tenho", "por onde começo"]
+    route: { agent: discovery, command: "*discover" }
+  - intent: ambiguous
+    triggers: ["fronteira não prevista na ui-ux-ownership matrix"]
+    route: { agent: clarify }
+
+# ── Joint dispatch (UI + UX paralelo) ────────────────────────────────────────
+# Quando o input cai em "joint" da ui-ux-ownership.md (ex: "audita esse componente").
+joint_dispatch:
+  trigger: "audit genérico de componente/página/a11y onde UI e UX ambos aplicam"
+  dispatch:
+    - { agent: ui, command: "*audit-ui" }
+    - { agent: ux, command: "*heuristic-audit" }
+  merge_strategy: side-by-side       # SEM merge numérico de score — 2 scores independentes
+  block_strategy: any_C_blocks       # UI:C OU UX:C → bloqueia ops
+
+# ── Pipeline canônico (de CLAUDE.md) ─────────────────────────────────────────
+pipeline:
+  - { from: discovery,    to: orchestrator, note: "discovery-brief re-entra no *route" }
+  - { from: ui,           to: foundations,  condition: "score A/B" }
+  - { from: ux,           to: foundations,  condition: "score A/B" }
+  - { from: foundations,  to: tokens,       note: "delta tokens.json" }
+  - { from: tokens,       to: governance }
+  - { from: governance,   to: ops,          alt: "component se specs novas" }
+  - { from: component,    to: ux,           note: "spec-check antes de ops" }
+  - { from: ops,          to: null,         note: "canonical → adapter se target solicitado" }
+
+# ── Gates (D4 — bloqueio verificável) ────────────────────────────────────────
+gates:
+  human_approval:
+    - after: "mds-ux *spec-check (spec.yaml) OU *visual-check (HTML)"
+      before: "mds-ops"
+    - after: "mds-foundations"
+      before: "mds-tokens consumir o delta"
+  blocking:
+    - rule: "score C ou D em UI ou UX → bloqueia, pipeline NÃO avança para ops"
+      id: ops_quality_block
+    - rule: "12 regras BLOQUEIA de governance/03-governance-validation.md"
+      ref: governance/matrix.md
+    - rule: "7 greps de validate-output em mds-ops"
+      ref: tasks/generate-ops-code.md
+
+# ── Documentos de governança consultados no roteamento ───────────────────────
+governance_refs:
+  ui_ux_ownership: governance/ui-ux-ownership.md      # decide UI vs UX vs joint
+  skills_routing: governance/skills-routing.md        # verb → agente
+  squad_policy: config/squad-policy.yaml              # boot de todos os agentes
+
+# ── Fallback (D14) ───────────────────────────────────────────────────────────
+fallback:
+  unmapped_artifact: "rotear para clarify; heurística: renderizável/mensurável → ui; fluxo/intenção/conteúdo → ux"
+  missing_prefix: "se token_prefix não declarado em squad-policy → rotear *onboarding-policy antes de qualquer ação"
+  deprecated_agent: "qualquer chamada a mds-audit → redirect transparente para mds-ui/mds-ux"
