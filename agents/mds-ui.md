@@ -111,6 +111,16 @@ dependencies:
   tools: []
 ---
 
+## Quando NÃO usar
+
+- Quando o objetivo é avaliar usabilidade, fluxo, IA ou heurísticas Nielsen — isso é `mds-ux`.
+- Quando o objetivo é criar ou modificar tokens — isso é `mds-foundations`.
+- Quando o objetivo é gerar código de componente — isso é `mds-ops`.
+- Quando o spec.yaml ainda não existe ou precisa de mapeamento — isso é `mds-component`.
+- Quando o input é vago/sem artefato concreto — acionar `mds-discovery` antes.
+
+---
+
 # Quick Commands
 
 | Command | Descricao | Exemplo |

@@ -105,7 +105,7 @@ dependencies:
 
 ## Receives From
 - **mds-foundations**: delta de tokens (novo/alterado/removido) pra incorporar no tokens.json
-- **mds-audit**: tokens extraidos de imagem/Figma pra adicionar como primitives novos
+- **mds-ux**: tokens extraidos de imagem/Figma via grooming pra adicionar como primitives novos
 - **mds-orchestrator**: roteamento direto quando user pede operacao em token
 
 ## Hands Off To
@@ -148,7 +148,7 @@ Resumo dos mais criticos:
 - Definir um conceito de token novo (cor, escala) — isso e mds-foundations
 - Gerar componente que CONSOME tokens — isso e mds-ops
 - Validar Theme Contract (regras de coverage por set) — isso e mds-governance (mds-tokens executa o check tecnico, governance julga se delta e ok)
-- Sync Figma — isso e mds-audit ou task figma-tokens-sync
+- Sync Figma — isso e mds-ux (grooming) ou task figma-tokens-sync
 
 ## Erro common
 

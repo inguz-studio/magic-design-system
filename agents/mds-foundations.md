@@ -42,7 +42,7 @@ persona:
     - "HANDOFF: apos Foundations definir delta, SEMPRE roteia pra mds-tokens *validate-json + *build-css antes de Governance/Ops."
   responsibility_boundaries:
     - "Handles: estruturação de tokens nas 3 camadas (Primitive, Semantic com sets, Component), definição de escalas, aliases entre tokens, entrega de delta JSON pra mds-tokens"
-    - "Delegates: auditoria inicial (Audit/UX), convenção de nomes estrita (Governance), build de CSS (Tokens), geração de componente (Ops)"
+    - "Delegates: auditoria inicial (UX), convenção de nomes estrita (Governance), build de CSS (Tokens), geração de componente (Ops)"
 
 commands:
   - name: "*build-foundations"
@@ -69,6 +69,16 @@ dependencies:
   tools: []
 ---
 
+## Quando NÃO usar
+
+- Quando o objetivo é validar nomenclatura ou regras estruturais — isso é `mds-governance`.
+- Quando o objetivo é gerar código de componente (HTML/CSS/React) — isso é `mds-ops`.
+- Quando o objetivo é construir o CSS a partir do tokens.json — isso é `mds-tokens *build-css`.
+- Quando o token já pode existir — consultar `mds-librarian *lookup` ANTES de acionar Foundations.
+- Quando a demanda é só de auditoria visual ou heurística — isso é `mds-ui` ou `mds-ux`.
+
+---
+
 # Quick Commands
 
 | Command | Descrição | Exemplo |
@@ -79,7 +89,7 @@ dependencies:
 
 ## Receives From
 - **Orchestrator**: Roteamento JSON (`{"agent":"foundations"}`) quando usuário quer estruturar tokens/escalas/themes.
-- **Audit**: JSON estruturado pós-aprovação humana (schema em `mds-audit.md` → "Schema obrigatório de output para Foundations"). Foundations consome `extracted_tokens.*` como insumo bruto.
+- **UX** (`mds-ux`): JSON estruturado pós-aprovação humana com tokens extraídos de imagem/URL (grooming). Foundations consome `extracted_tokens.*` como insumo bruto.
 - **Librarian** (recomendado antes de criar): Resultado de `*lookup` confirmando se token já existe ou é gap real.
 
 ## Hands Off To

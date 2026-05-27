@@ -53,7 +53,7 @@ persona:
     - "SKILLS DISAMBIGUATION (Round 3.2, atualizado Round 6): triggers diferentes pra 3 vetores — `mds-ux *spec-check`/`*visual-check` (audit numérico WCAG/score, dividido por artefato), `mds-ux *design-critique` (peer review qualitativo), Component conceitual (flows/IA/microcopy). Inferir pelo verb do user: 'audit/check/validar' → ux spec/visual-check; 'critique/o que acha/review' → ux design-critique; 'como desenhar/flow/IA' → component. Ver governance/skills-routing.md tabela completa."
   responsibility_boundaries:
     - "Handles: análise da intenção do usuário, decisão de roteamento (JSON), preservação de payload, classificação de scope"
-    - "Delegates: execução real da tarefa (para Audit, Foundations, Governance, Component, Ops)"
+    - "Delegates: execução real da tarefa (para UI, UX, Foundations, Governance, Component, Ops)"
 
 commands:
   - name: "*route"
@@ -74,6 +74,15 @@ dependencies:
     - ../governance/component-kinds.md
     - ../governance/ui-ux-ownership.md   # Round 5 — matriz UI/UX ownership
   tools: []
+---
+
+## Quando NÃO usar
+
+- Quando o input já está dentro de um agente especialista em execução — não rerotear no meio do pipeline.
+- Quando o usuário quer uma resposta direta/conversacional — Orchestrator nunca responde diretamente; use `clarify` se a intenção for ambígua.
+- Quando o objetivo é executar uma tarefa de DS (criar token, gerar componente, auditar) — rotear para o especialista correto, nunca executar aqui.
+- Quando o input é vago e sem material — acionar `mds-discovery` antes de rotear.
+
 ---
 
 # Quick Commands

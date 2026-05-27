@@ -30,8 +30,8 @@ Este agente foi dividido em Round 5. Não invoque diretamente.
 | Função antiga | Agente atual |
 |---|---|
 | `*design-check` | `mds-ux *design-check` |
-| `*grooming` (inspeção visual) | `mds-ui` |
-| `*extract-url` | `mds-ui` |
+| `*grooming` (inspeção visual) | `mds-ux` |
+| `*extract-url` | `mds-ux` |
 | `*audit-showcase` | `mds-ux *audit-showcase` |
 | Checagem de a11y / heurísticas | `mds-component` (spec) ou `mds-ux` (flow) |
 

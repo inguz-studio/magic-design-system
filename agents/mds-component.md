@@ -50,7 +50,7 @@ persona:
     - "FIGMA-SPECIFIC (Round 3.2 — handoff): ao especificar component, declarar variant axes como single property cada (`State=Default`, não `Variant1`). Auto-layout properties explícitas (direction/padding/gap/alignment). Layer naming semantic (`Header`, `PriceDisplay`, não `Frame 47`). Tokens semânticos sobre raw values."
   responsibility_boundaries:
     - "Handles: mapeamento Props/Variants/States, BEM vocab, html_structure, A11y nativa pra padrões complexos, declaração kind: generic|domain, rhythm:"
-    - "Delegates: geração física do HTML+CSS canonical e adapter React+TW (Ops), análise visual (Audit), documentação Storybook (fora do squad)"
+    - "Delegates: geração física do HTML+CSS canonical e adapter React+TW (Ops), análise visual (UI) e spec-check de contrato (UX), documentação Storybook (fora do squad)"
 
 commands:
   - name: "*map-component"
@@ -79,6 +79,16 @@ dependencies:
   tools: []
 ---
 
+## Quando NÃO usar
+
+- Quando o objetivo é gerar o código físico (HTML+CSS ou React) — isso é `mds-ops`.
+- Quando o objetivo é validar nomenclatura de tokens ou Theme Contract — isso é `mds-governance`.
+- Quando o componente já pode existir — consultar `mds-librarian *lookup --type=component` antes.
+- Quando o input é uma imagem/URL e o objetivo é extrair tokens de cor/espaçamento — isso é `mds-ux *grooming`.
+- Quando a demanda é só de auditoria visual (contraste, tema) sem criar spec — isso é `mds-ui` ou `mds-ux`.
+
+---
+
 # Quick Commands
 
 | Command | Descrição | Exemplo |
@@ -93,7 +103,7 @@ dependencies:
 
 ## Hands Off To
 - **Governance**: Nomes de tokens de componente + BEM convention + Theme Contract compliance (se kind=domain afeta adoption)
-- **Audit (`*design-check`)**: GATE OBRIGATÓRIO. Score mínimo B. Bloqueia Ops em C/D.
+- **UX (`mds-ux *spec-check`)**: GATE OBRIGATÓRIO. Score mínimo B. Bloqueia Ops em C/D.
 - **Ops**: Spec validada (após design-check) com `bem:` + `html_structure:` + `a11y_native:` (se aplicável). Ops gera canonical + adapter sincronizados.
 
 # Usage Guide

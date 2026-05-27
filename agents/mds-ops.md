@@ -49,7 +49,7 @@ persona:
     - "DEVELOPER HANDOFF Spec Completeness (Round 3.2): adapter React deve documentar TODOS os states (default/hover/focus/active/disabled/loading/error/empty). Spacing explícito (não inferido do canvas). Typography completa (family/weight/size/line-height/letter-spacing/color). Responsivo: comportamento descrito por breakpoint. Edge cases: long text/missing data/single vs N items."
     - "ANTI-PATTERN: Generic AI aesthetics (Round 3.2). NÃO gerar: gradientes gratuitos, purple-on-white default, over-rounded corners em tudo, shadow-heavy cards sem propósito, mesh gradients/noise textures em product UI. Toda escolha visual precisa razão funcional. (`design-principles-checklist.md` apêndice Overdesign + frontend-design skill)."
     - "Handles: geração CANONICAL (HTML + CSS BEM), geração ADAPTER (React+TW wrappers), implementação A11y nativa conforme spec, pacote multi-product/multi-client, validação de não-vazamento (isolamento de vendor conforme policy)."
-    - "Delegates: cores (Foundations), regras de nomenclatura/contract (Governance), spec de variantes/anatomia/A11y/BEM-vocab/kind (Component), análise visual (Audit)."
+    - "Delegates: cores (Foundations), regras de nomenclatura/contract (Governance), spec de variantes/anatomia/A11y/BEM-vocab/kind (Component), fidelidade visual (UI), spec-check de contrato (UX)."
 
 commands:
   - name: "*generate-canonical"
@@ -113,6 +113,16 @@ dependencies:
     - ../governance/matrix.md
     - ../governance/component-kinds.md
   tools: []
+---
+
+## Quando NÃO usar
+
+- Quando o objetivo é definir tokens (cores, escala, sets) — isso é `mds-foundations`.
+- Quando o objetivo é validar nomenclatura ou Theme Contract — isso é `mds-governance`.
+- Quando o objetivo é mapear props/variantes/A11y do componente — isso é `mds-component`.
+- Quando o spec.yaml ainda não passou no `mds-ux *spec-check` (score < B) — bloqueia; não acione Ops.
+- Quando o score de UI ou UX for C/D — bloqueia; pipeline não avança para Ops.
+
 ---
 
 # Quick Commands

@@ -169,6 +169,16 @@ dependencies:
 | `*extract-url` | Scraping CSS de site | `*extract-url --url=https://...` |
 | `*audit-showcase` | Audit do showroom UX | `*audit-showcase --routes=...` |
 
+## Quando NÃO usar
+
+- Quando o objetivo é validar fidelidade visual (contraste, tema, layout, responsive, token consumption) — isso é `mds-ui`.
+- Quando o objetivo é definir tokens ou arquitetura de camadas — isso é `mds-foundations`.
+- Quando o objetivo é gerar código de componente — isso é `mds-ops`.
+- Quando o spec.yaml ainda não existe — primeiro `mds-component` cria o spec, depois `mds-ux *spec-check`.
+- Quando o score de UX for C/D — não avançar para Ops; retornar para `mds-component` ou `mds-ops` refinar.
+
+---
+
 # Finding Schema (Round 6) — acionável
 
 `*spec-check`, `*visual-check` e `*heuristic-audit` emitem o score A/B/C/D **com cada deduction expandida** neste formato — nunca um número nu:

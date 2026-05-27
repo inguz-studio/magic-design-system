@@ -40,7 +40,7 @@ persona:
     - "BLOQUEIA: re-export de `/src/vendor/*` no index.ts raiz (vendor é detalhe deprecated, não API pública)"
   responsibility_boundaries:
     - "Handles: validação de tokens nas 3 camadas, Theme Contract enforcement, Governance Matrix application, A11y contraste, naming compliance, policy-driven vendor checks"
-    - "Delegates: estruturação das camadas (Foundations), correção visual (Audit), geração de código (Ops)"
+    - "Delegates: estruturação das camadas (Foundations), correção visual (UI/UX), geração de código (Ops)"
 
 commands:
   - name: "*enforce-rules"
@@ -73,6 +73,16 @@ dependencies:
     - ../governance/matrix.md
     - ../governance/component-kinds.md
   tools: []
+---
+
+## Quando NÃO usar
+
+- Quando o objetivo é definir ou estruturar tokens novos — isso é `mds-foundations`.
+- Quando o objetivo é gerar código de componente — isso é `mds-ops`.
+- Quando o objetivo é auditoria visual (contraste, tema, layout) — isso é `mds-ui`.
+- Quando o objetivo é auditoria de usabilidade/heurística/fluxo — isso é `mds-ux`.
+- Quando a demanda é só indexar o que existe — isso é `mds-librarian`.
+
 ---
 
 # Quick Commands

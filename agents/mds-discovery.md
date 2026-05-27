@@ -133,6 +133,15 @@ discovery-brief:
 - `existing_assets` com URL/imagem/tokens_json → `suggested_input_type` aponta o atalho (URL/imagem → grooming; tokens_json → mds-tokens).
 - `intent: unknown` após 3 movimentos → emite brief com `open_questions` preenchido; Orchestrator decide `clarify`.
 
+## Quando NÃO usar
+
+- Quando o input já é concreto (imagem, URL, comando explícito, spec) — ir direto ao `mds-orchestrator`.
+- Quando o usuário já sabe o que quer e fornece material — Discovery só atrasa o pipeline nesse caso.
+- Quando o objetivo é executar qualquer tarefa de DS (criar token, auditar, gerar componente) — Discovery não executa, só descobre.
+- Quando já existe um `discovery-brief` válido da sessão — usar `*brief` para retomar, não reiniciar o discovery.
+
+---
+
 # Anti-Patterns
 
 - **NUNCA** rode quando o input já é concreto (imagem/URL/comando/spec) — Discovery atrasaria o pipeline. Pule direto pro Orchestrator.
